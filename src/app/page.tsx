@@ -13,21 +13,21 @@ const PATTERNS = [
 ];
 
 const FONTS = [
-  { id: 'noto-sans-jp', name: 'Noto Sans JP' },
-  { id: 'noto-serif-jp', name: 'Noto Serif JP' },
-  { id: 'm-plus-rounded', name: 'M PLUS Rounded' },
-  { id: 'inter', name: 'Inter (English)' },
+  { id: 'noto-sans-jp', name: 'Noto Sans JP', type: 'ゴシック体', family: "'Noto Sans JP', sans-serif" },
+  { id: 'noto-serif-jp', name: 'Noto Serif JP', type: '明朝体', family: "'Noto Serif JP', serif" },
+  { id: 'm-plus-rounded', name: 'M PLUS Rounded', type: '丸ゴシック体', family: "'M PLUS Rounded 1c', sans-serif" },
+  { id: 'inter', name: 'Inter', type: '英語向けサンセリフ', family: "Inter, sans-serif" },
 ];
 
 const COLOR_PRESETS = [
-  { id: 'dark-blue', name: 'ダーク・ブルー', colors: ['#0f0c29', '#302b63'] },
-  { id: 'dark-green', name: 'ダーク・グリーン', colors: ['#0a1a0f', '#1a3a2a'] },
-  { id: 'dark-purple', name: 'ダーク・パープル', colors: ['#1a0a2e', '#2d1b69'] },
-  { id: 'dark-warm', name: 'ダーク・ウォーム', colors: ['#1a0a00', '#2d1500'] },
-  { id: 'light-blue', name: 'ライト・ブルー', colors: ['#e0f2fe', '#bae6fd'] },
-  { id: 'light-green', name: 'ライト・グリーン', colors: ['#ecfdf5', '#d1fae5'] },
-  { id: 'light-warm', name: 'ライト・ウォーム', colors: ['#fff7ed', '#fed7aa'] },
-  { id: 'light-purple', name: 'ライト・パープル', colors: ['#f5f3ff', '#ede9fe'] },
+  { id: 'dark-blue', name: 'ダーク・ブルー', colors: ['#0f0c29', '#302b63'], isLight: false },
+  { id: 'dark-green', name: 'ダーク・グリーン', colors: ['#0a1a0f', '#1a3a2a'], isLight: false },
+  { id: 'dark-purple', name: 'ダーク・パープル', colors: ['#1a0a2e', '#2d1b69'], isLight: false },
+  { id: 'dark-warm', name: 'ダーク・ウォーム', colors: ['#1a0a00', '#2d1500'], isLight: false },
+  { id: 'light-blue', name: 'ライト・ブルー', colors: ['#e0f2fe', '#bae6fd'], isLight: true },
+  { id: 'light-green', name: 'ライト・グリーン', colors: ['#ecfdf5', '#d1fae5'], isLight: true },
+  { id: 'light-warm', name: 'ライト・ウォーム', colors: ['#fff7ed', '#fed7aa'], isLight: true },
+  { id: 'light-purple', name: 'ライト・パープル', colors: ['#f5f3ff', '#ede9fe'], isLight: true },
 ];
 
 const BG_SOURCES = [
@@ -115,43 +115,42 @@ export default function Home() {
     <div className="app-container">
       <header className="app-header">
         <h1>OGP Maker</h1>
-        <p>AI背景 × テキストオーバーレイで、プロフェッショナルな画像を瞬時に生成</p>
+        <p>AI背景 × テキストオーバーレイで、プロフェフェッショナルな画像を瞬時に生成</p>
       </header>
+
+      {/* トップ入力パネル: 長いテキストに対応 */}
+      <section className="input-panel">
+        <div className="field-group">
+          <div className="field-label">
+            コンテンツタイプ <span className="hint">例: 採択, 受賞, 発表</span>
+          </div>
+          <input name="type" className="panel-input" value={formData.type} onChange={handleChange} />
+        </div>
+        <div className="field-group">
+          <div className="field-label">タイトル</div>
+          <textarea name="title" className="panel-textarea" rows={2} value={formData.title} onChange={handleChange} />
+        </div>
+        <div className="field-group">
+          <div className="field-label">補足情報</div>
+          <textarea name="info" className="panel-textarea" rows={2} value={formData.info} onChange={handleChange} />
+        </div>
+      </section>
 
       <div className="workspace">
         <aside className="sidebar">
           <div className="sidebar-group">
-            <h3 className="section-title"><span>📋</span> コンテンツ設定</h3>
-            <div className="form-group" style={{ marginBottom: '20px' }}>
-              <label>コンテンツタイプ</label>
-              <input name="type" className="dark-input" placeholder="採択" value={formData.type} onChange={handleChange} />
-            </div>
-            <div className="form-group" style={{ marginBottom: '20px' }}>
-              <label>タイトル</label>
-              <textarea 
-                name="title" 
-                className="dark-input" 
-                rows={3} 
-                style={{ resize: 'none' }} 
-                value={formData.title} 
-                onChange={handleChange} 
-              />
-            </div>
-            <div className="form-group">
-              <label>補足情報</label>
-              <input name="info" className="dark-input" placeholder="Arakawa Lab" value={formData.info} onChange={handleChange} />
-            </div>
-          </div>
-
-          <div className="sidebar-group">
-            <h3 className="section-title"><span>🖋</span> タイポグラフィ</h3>
+            <h3 className="section-label">🖋 書体選択</h3>
             <select name="font" className="dark-select" value={formData.font} onChange={handleChange}>
-              {FONTS.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+              {FONTS.map(f => (
+                <option key={f.id} value={f.id} style={{ fontFamily: f.family }}>
+                  {f.name} — {f.type}
+                </option>
+              ))}
             </select>
           </div>
 
           <div className="sidebar-group">
-            <h3 className="section-title"><span>🖼</span> 背景・スタイル</h3>
+            <h3 className="section-label">🎨 スタイル・背景</h3>
             <div className="dark-tabs">
               {BG_SOURCES.map(s => (
                 <div 
@@ -165,15 +164,18 @@ export default function Home() {
             </div>
 
             {formData.source === 'gradient' ? (
-              <div className="palette-grid animate-fade-in">
+              <div className="compact-palette animate-fade-in">
                 {COLOR_PRESETS.map(c => (
                   <div 
                     key={c.id} 
-                    className={`palette-item ${formData.color === c.id ? 'active' : ''}`}
-                    style={{ background: `linear-gradient(135deg, ${c.colors[0]}, ${c.colors[1]})` }}
+                    className={`palette-thumb ${formData.color === c.id ? 'active' : ''}`}
+                    style={{ 
+                      background: `linear-gradient(135deg, ${c.colors[0]}, ${c.colors[1]})`,
+                      color: c.isLight ? '#000' : '#fff'
+                    }}
                     onClick={() => setFormData(prev => ({ ...prev, color: c.id }))}
                   >
-                    <span>{c.name}</span>
+                    {c.name.split('・')[1]}
                   </div>
                 ))}
               </div>
@@ -181,62 +183,60 @@ export default function Home() {
               <div className="animate-fade-in">
                 <input 
                   name="query" 
-                  className="dark-input" 
-                  placeholder={formData.source === 'pollinations' ? 'AI指示（例: nebula, city）' : '写真検索キーワード'} 
+                  className="panel-input" 
+                  placeholder={formData.source === 'pollinations' ? 'AI指示' : 'キーワード検索'} 
                   value={formData.query} 
                   onChange={handleChange} 
+                  style={{ width: '100%', marginBottom: '12px' }}
                 />
                 <button className="btn-secondary" onClick={generatePreview} disabled={isOverLimit}>
-                  {loading ? '生成中...' : '🔄 背景を再構成する'}
+                  🔄 背景を再構成する
                 </button>
               </div>
             )}
           </div>
 
-          <div style={{ marginTop: 'auto', textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+          <div style={{ marginTop: 'auto', textAlign: 'center', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
              本日利用: {usage} / {maxLimit} 回 <br />
-             <span style={{ fontSize: '0.65rem', opacity: 0.5 }}>明日にリセットされます</span>
+             残り {maxLimit - usage} 回
           </div>
         </aside>
 
         <main className="main-dashboard">
-          <section className="pattern-section">
-            <h3 className="section-title">🧩 レイアウトデザイン</h3>
-            <div className="pattern-carousel">
+          <section className="pattern-row">
+            <h3 className="section-label">🧩 レイアウト</h3>
+            <div style={{ display: 'flex' }}>
               {PATTERNS.map(p => (
                 <div 
                   key={p.id} 
-                  className={`pattern-box ${formData.pattern === p.id ? 'active' : ''}`}
+                  className={`pattern-item ${formData.pattern === p.id ? 'active' : ''}`}
                   onClick={() => setFormData(prev => ({ ...prev, pattern: p.id }))}
                 >
-                  <div className="pattern-media">
-                    <img src={p.img} alt={p.name} />
-                  </div>
-                  <div className="pattern-label">{p.name}</div>
+                   <div className="pattern-img"><img src={p.img} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>
+                   <div style={{ fontSize: '0.7rem', textAlign: 'center', color: formData.pattern === p.id ? 'var(--accent-primary)' : 'var(--text-muted)' }}>
+                    {p.name}
+                   </div>
                 </div>
               ))}
             </div>
           </section>
 
-          <section className="canvas-section">
-            <div className="canvas-preview">
-              <div className="og-frame">
+          <section className="canvas-area">
+             <div className="og-shadow-box">
                 {loading && (
                   <div className="loading-shade">
                     <div className="spin"></div>
                   </div>
                 )}
                 <img src={ogUrl} alt="Preview" className="og-img" key={previewKey} onLoad={() => setLoading(false)} onError={() => setLoading(false)} />
-              </div>
-              <div style={{ textAlign: 'right', marginTop: '16px', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>1200 × 630</div>
-            </div>
+             </div>
           </section>
 
-          <footer className="action-area">
-            <button className="btn-download" onClick={downloadImage} disabled={downloading}>
-              <Download size={24} />
-              {downloading ? '保存中...' : 'PNGをダウンロード'}
-            </button>
+          <footer className="action-footer">
+             <button className="btn-premium" onClick={downloadImage} disabled={downloading}>
+               <Download size={22} />
+                {downloading ? '保存中...' : 'PNGをダウンロード'}
+             </button>
           </footer>
         </main>
       </div>
