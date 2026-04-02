@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const notoSansJP = Noto_Sans_JP({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+});
 
 export const metadata: Metadata = {
-  title: "Pollinations OGP Maker - Beautiful Social Images",
-  description: "Generate OGP images with AI-powered backgrounds and custom text overlays.",
+  title: "OGP Maker — AI背景でSNS映えする画像を生成",
+  description: "Pollinations AIやUnsplashの写真素材を使って、学会発表・論文採択・ブログ記事用のOGP画像をかんたんに生成できるWebツールです。",
 };
 
 export default function RootLayout({
@@ -15,8 +18,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="ja">
+      <body className={notoSansJP.className}>{children}</body>
     </html>
   );
 }

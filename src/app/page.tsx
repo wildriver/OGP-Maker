@@ -1,31 +1,40 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Download, Copy, RefreshCcw, LogIn, Settings } from 'lucide-react';
+import { Download, Copy, RefreshCcw, Settings, ImageIcon } from 'lucide-react';
 
 const PATTERNS = [
-  { id: 'classic', name: 'Classic Dark', desc: 'Minimalist dark overlay' },
-  { id: 'glass', name: 'Glassmorphism', desc: 'Frosted central card' },
-  { id: 'neon', name: 'Cyber Neon', desc: 'Glowing text effects' },
-  { id: 'minimal', name: 'Clean Light', desc: 'Focus on title scale' },
+  { id: 'classic', name: 'クラシック', desc: 'グラデーションオーバーレイ', img: '/pattern-classic.png' },
+  { id: 'glass', name: 'グラス', desc: 'すりガラス風カード', img: '/pattern-glass.png' },
+  { id: 'neon', name: 'ネオン', desc: 'サイバーな発光効果', img: '/pattern-neon.png' },
+  { id: 'minimal', name: 'ミニマル', desc: '左寄せ大文字', img: '/pattern-minimal.png' },
 ];
 
-// Help helper for cookies
+const FONTS = [
+  { id: 'noto-sans-jp', name: 'Noto Sans JP', desc: 'ゴシック体（デフォルト）' },
+  { id: 'noto-serif-jp', name: 'Noto Serif JP', desc: '明朝体' },
+  { id: 'm-plus-rounded', name: 'M PLUS Rounded', desc: '丸ゴシック体' },
+  { id: 'inter', name: 'Inter', desc: '英語向けサンセリフ' },
+];
+
 const getTodayDate = () => new Date().toISOString().split('T')[0];
 
 export default function Home() {
   const [formData, setFormData] = useState({
-    type: 'Report',
-    title: 'Modern OGP Generator Service',
-    info: 'Arakawa Lab | 2026',
+    type: '採択',
+    title: '大規模言語モデルによる研究支援の新展開',
+    info: 'Arakawa Lab | IEEE 2026',
     pattern: 'glass',
     seed: '42',
-    apiKey: '',
     source: 'pollinations',
-    query: ''
+    query: '',
+    font: 'noto-sans-jp',
   });
-  
+
   const [usage, setUsage] = useState(0);
+  const [previewKey, setPreviewKey] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const date = getTodayDate();
@@ -41,178 +50,188 @@ export default function Home() {
   };
 
   const maxLimit = 10;
-  const isOverLimit = !formData.apiKey && usage >= maxLimit;
+  const isOverLimit = usage >= maxLimit;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const regenerateSeed = () => {
+  const generatePreview = () => {
     if (isOverLimit) {
-      alert(`Limit reached (${maxLimit}/day). Use your own API key for more.`);
+      alert(`本日の利用上限（${maxLimit}回/日）に達しました。`);
       return;
     }
-    setFormData(prev => ({ ...prev, seed: Math.floor(Math.random() * 1000).toString() }));
+    setLoading(true);
+    setFormData(prev => ({ ...prev, seed: Math.floor(Math.random() * 10000).toString() }));
     incrementUsage();
+    setPreviewKey(prev => prev + 1);
+    // Loading will be cleared when image loads
   };
 
-  const ogUrl = `/api/og?title=${encodeURIComponent(formData.title)}&type=${encodeURIComponent(formData.type)}&info=${encodeURIComponent(formData.info)}&pattern=${formData.pattern}&seed=${formData.seed}&source=${formData.source}&query=${encodeURIComponent(formData.query || formData.title)}`;
+  const ogUrl = `/api/og?title=${encodeURIComponent(formData.title)}&type=${encodeURIComponent(formData.type)}&info=${encodeURIComponent(formData.info)}&pattern=${formData.pattern}&seed=${formData.seed}&source=${formData.source}&query=${encodeURIComponent(formData.query || formData.title)}&font=${formData.font}`;
 
   const copyUrl = () => {
     const fullUrl = window.location.origin + ogUrl;
     navigator.clipboard.writeText(fullUrl);
-    alert('URL copied to clipboard!');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
     <main className="container">
       <header className="header">
-        <h1 className="gradient-text" style={{ fontSize: '3.5rem', marginBottom: '8px', letterSpacing: '-1px' }}>
+        <h1 className="gradient-text" style={{ fontSize: '3.2rem', marginBottom: '8px', letterSpacing: '-1px' }}>
           OGP Maker
         </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem' }}>
-          Powered by Pollinations AI
+        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
+          AI背景 × テキストオーバーレイで、SNS映えするOGP画像を生成
         </p>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px', alignItems: 'start' }}>
+      <div className="main-grid">
+        {/* ===== Left: Form ===== */}
         <section className="card">
+          {/* Type + Info */}
           <div className="form-group">
-            <label className="label">Template Data</label>
+            <label className="label">コンテンツタイプ / 補足情報</label>
             <div style={{ display: 'flex', gap: '12px' }}>
-              <input name="type" className="input" placeholder="Type" style={{ width: '40%' }} value={formData.type} onChange={handleChange} />
-              <input name="info" className="input" placeholder="Supplementary Info" style={{ width: '60%' }} value={formData.info} onChange={handleChange} />
+              <input name="type" className="input" placeholder="例: 採択 / 報告 / 発表" style={{ width: '40%' }} value={formData.type} onChange={handleChange} />
+              <input name="info" className="input" placeholder="例: 学会名 / 日付" style={{ width: '60%' }} value={formData.info} onChange={handleChange} />
             </div>
           </div>
 
+          {/* Title */}
           <div className="form-group">
-            <label className="label">Title</label>
-            <input name="title" className="input" placeholder="Main Title" value={formData.title} onChange={handleChange} />
+            <label className="label">タイトル</label>
+            <input name="title" className="input" placeholder="メインタイトルを入力" value={formData.title} onChange={handleChange} />
           </div>
 
+          {/* Background Source */}
           <div className="form-group">
-            <label className="label">Background Source</label>
+            <label className="label">背景画像</label>
             <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <label className="radio-label">
                 <input type="radio" name="source" value="pollinations" checked={formData.source === 'pollinations'} onChange={handleChange} />
-                <span style={{ fontSize: '0.9rem' }}>AI (Pollinations)</span>
+                <span>🎨 AI生成（Pollinations）</span>
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <label className="radio-label">
                 <input type="radio" name="source" value="unsplash" checked={formData.source === 'unsplash'} onChange={handleChange} />
-                <span style={{ fontSize: '0.9rem' }}>Stock (Unsplash)</span>
+                <span>📷 写真素材（Unsplash）</span>
               </label>
             </div>
-            {formData.source === 'unsplash' && (
-              <input 
-                name="query" 
-                className="input" 
-                placeholder="Search keyword (e.g. nature, tech)" 
-                value={formData.query} 
-                onChange={handleChange} 
-              />
-            )}
+            <input
+              name="query"
+              className="input"
+              placeholder={formData.source === 'pollinations' ? '背景のプロンプト（空欄ならタイトルを使用）' : '検索キーワード（例: nature, technology）'}
+              value={formData.query}
+              onChange={handleChange}
+            />
           </div>
 
+          {/* Font */}
           <div className="form-group">
-            <label className="label">Layout Pattern</label>
+            <label className="label">フォント</label>
+            <select name="font" className="input select" value={formData.font} onChange={handleChange}>
+              {FONTS.map((f) => (
+                <option key={f.id} value={f.id}>{f.name} — {f.desc}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Pattern */}
+          <div className="form-group">
+            <label className="label">レイアウトパターン</label>
             <div className="pattern-grid">
               {PATTERNS.map((p) => (
                 <label key={p.id} className="pattern-option">
                   <input type="radio" name="pattern" value={p.id} className="pattern-input" checked={formData.pattern === p.id} onChange={handleChange} />
                   <div className="pattern-card">
+                    <img src={p.img} alt={p.name} className="pattern-preview-img" />
                     <div className="pattern-name">{p.name}</div>
+                    <div className="pattern-desc">{p.desc}</div>
                   </div>
                 </label>
               ))}
             </div>
           </div>
 
-          <div className="form-group" style={{ marginTop: '32px', borderTop: '1px solid var(--border-color)', paddingTop: '24px' }}>
-            <label className="label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-               <Settings size={16} /> Optional Settings
-            </label>
-            <input 
-              name="apiKey" 
-              className="input" 
-              placeholder="Enter Access Key (Unlimited Mode)" 
-              value={formData.apiKey} 
-              onChange={handleChange}
-              type="password"
-            />
+          {/* Generate Button */}
+          <button className="button generate-btn" onClick={generatePreview} disabled={isOverLimit}>
+            <ImageIcon size={20} />
+            {loading ? '生成中...' : '🔄 背景を再生成する'}
+          </button>
+
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+            <button className="button secondary-btn" onClick={copyUrl}>
+              <Copy size={18} /> {copied ? 'コピーしました！' : 'OGP URLをコピー'}
+            </button>
+            <a href={ogUrl} target="_blank" className="button secondary-btn" rel="noopener noreferrer">
+              <Download size={18} /> フルサイズで開く
+            </a>
           </div>
 
-          <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-            <button className="button" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={copyUrl}>
-              <Copy size={20} /> Copy OGP URL
-            </button>
-            <button className="button" style={{ width: 'auto', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)' }} onClick={regenerateSeed} title="Regenerate Background">
-              <RefreshCcw size={20} />
-            </button>
-          </div>
-          
+          {/* Usage Bar */}
           <div style={{ marginTop: '20px', textAlign: 'center' }}>
-            <div style={{ 
-              height: '4px', 
-              background: 'rgba(255,255,255,0.1)', 
-              borderRadius: '2px', 
-              overflow: 'hidden',
-              marginBottom: '8px'
-            }}>
-              <div style={{ 
-                width: `${Math.min(100, (usage / maxLimit) * 100)}%`, 
-                height: '100%', 
+            <div className="usage-bar">
+              <div className="usage-fill" style={{
+                width: `${Math.min(100, (usage / maxLimit) * 100)}%`,
                 background: usage >= maxLimit ? 'var(--accent-color)' : 'var(--accent-blue)',
-                transition: 'width 0.3s ease'
               }} />
             </div>
             <span style={{ fontSize: '0.8rem', color: isOverLimit ? 'var(--accent-color)' : 'var(--text-secondary)' }}>
-              Usage Today: {usage} / {maxLimit}
+              本日の利用: {usage} / {maxLimit} 回
             </span>
           </div>
         </section>
 
+        {/* ===== Right: Preview ===== */}
         <section className="preview-section" style={{ marginTop: 0 }}>
-          <div className="ogp-preview-container" style={{ border: isOverLimit ? '2px solid var(--accent-color)' : '1px solid var(--border-color)' }}>
+          <h2 style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>プレビュー（1200×630）</h2>
+          <div className="ogp-preview-container">
             {isOverLimit ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '40px', background: 'rgba(0,0,0,0.8)' }}>
-                <p style={{ marginBottom: '16px', fontWeight: 600 }}>Limit reached for today!</p>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', textAlign: 'center' }}>Wait 24h or enter an Access Key to continue.</p>
+              <div className="limit-overlay">
+                <p style={{ marginBottom: '12px', fontWeight: 600, fontSize: '1.1rem' }}>本日の利用上限に達しました</p>
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>明日またお使いいただけます。</p>
               </div>
             ) : (
               <>
-                <img src={ogUrl} alt="OGP Preview" className="ogp-image" key={ogUrl} />
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: '285px',
-                  width: '630px',
-                  height: '630px',
-                  border: '1px dashed rgba(255,255,255,0.2)',
-                  pointerEvents: 'none',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  justifyContent: 'center',
-                  paddingTop: '8px',
-                  fontSize: '10px',
-                  color: 'rgba(255,255,255,0.3)'
-                }}>
-                  630x630 Critical Area
-                </div>
+                {loading && (
+                  <div className="loading-overlay">
+                    <div className="spinner" />
+                    <p>画像を生成中...</p>
+                  </div>
+                )}
+                <img
+                  src={ogUrl}
+                  alt="OGP Preview"
+                  className="ogp-image"
+                  key={previewKey}
+                  onLoad={() => setLoading(false)}
+                  onError={() => setLoading(false)}
+                />
               </>
             )}
           </div>
-          
-          <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center', gap: '16px' }}>
-             <a href={ogUrl} download={`ogp-${formData.seed}.png`} target="_blank" className="button" style={{ width: 'auto', background: 'transparent', border: '1px solid var(--border-color)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Download size={18} /> Open full size
-             </a>
+
+          {/* How to use */}
+          <div className="tip-card">
+            <h3 style={{ fontSize: '0.95rem', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Settings size={16} /> 使い方
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+              生成されたURLをHTMLの<code>&lt;meta&gt;</code>タグに設定してください：
+            </p>
+            <code className="code-block">
+              &lt;meta property=&quot;og:image&quot; content=&quot;https://your-domain.com{ogUrl}&quot; /&gt;
+            </code>
           </div>
         </section>
       </div>
 
-      <footer style={{ marginTop: '80px', textAlign: 'center', color: 'var(--text-secondary)', paddingBottom: '40px' }}>
-        <p>Built with Pollinations + Unsplash + Next.js. Ready for Vercel.</p>
+      <footer style={{ marginTop: '80px', textAlign: 'center', color: 'var(--text-secondary)', paddingBottom: '40px', fontSize: '0.85rem' }}>
+        <p>Pollinations AI + Unsplash + Next.js で構築 | Vercel にデプロイ中</p>
       </footer>
     </main>
   );

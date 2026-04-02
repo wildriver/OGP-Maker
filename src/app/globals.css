@@ -1,27 +1,29 @@
 :root {
-  --bg-color: #0c0c0e;
-  --panel-bg: rgba(255, 255, 255, 0.05);
+  --bg-color: #0a0a0c;
+  --panel-bg: rgba(255, 255, 255, 0.04);
   --accent-color: #ff3366;
   --accent-blue: #00d2ff;
   --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --border-color: rgba(255, 255, 255, 0.1);
-  --radius-lg: 24px;
-  --font-inter: 'Inter', system-ui, sans-serif;
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --radius-lg: 20px;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   background-color: var(--bg-color);
   color: var(--text-primary);
-  font-family: var(--font-inter);
   margin: 0;
   -webkit-font-smoothing: antialiased;
 }
 
 .container {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 80px 24px;
+  padding: 60px 24px;
 }
 
 .header {
@@ -37,55 +39,98 @@ body {
   font-weight: 800;
 }
 
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .card {
   background: var(--panel-bg);
   border: 1px solid var(--border-color);
   backdrop-filter: blur(10px);
   border-radius: var(--radius-lg);
-  padding: 40px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  padding: 32px;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
 }
 
 .form-group {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .label {
   display: block;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--text-secondary);
   margin-bottom: 8px;
   font-weight: 500;
 }
 
-.input {
+.input, .select {
   width: 100%;
-  padding: 14px 18px;
-  background: rgba(0, 0, 0, 0.2);
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 10px;
   color: white;
-  font-size: 1rem;
-  box-sizing: border-box;
+  font-size: 0.95rem;
 }
 
-.input:focus {
+.input:focus, .select:focus {
   outline: none;
   border-color: var(--accent-blue);
-  box-shadow: 0 0 0 4px rgba(0, 210, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 210, 255, 0.1);
 }
 
+.select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.select option {
+  background: #1a1a1e;
+  color: #fff;
+}
+
+/* Radio Labels */
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.radio-label input[type="radio"] {
+  accent-color: var(--accent-blue);
+}
+
+/* Buttons */
 .button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, var(--accent-color), var(--accent-blue));
+  padding: 14px;
   border: none;
   border-radius: 12px;
   color: white;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1rem;
   cursor: pointer;
-  transition: transform 0.2s, filter 0.2s;
+  transition: transform 0.15s, filter 0.15s, opacity 0.15s;
+  text-decoration: none;
 }
 
 .button:hover {
@@ -97,35 +142,96 @@ body {
   transform: translateY(0);
 }
 
+.button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.generate-btn {
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-blue));
+  font-size: 1.05rem;
+}
+
+.secondary-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  padding: 10px 14px;
+}
+
+/* Usage bar */
+.usage-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.usage-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+/* Preview */
 .preview-section {
-  margin-top: 60px;
   text-align: center;
 }
 
 .ogp-preview-container {
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
   aspect-ratio: 1200 / 630;
   position: relative;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  background: #1a1a1a;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  background: #111;
+  border: 1px solid var(--border-color);
 }
 
 .ogp-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
-/* Grid for pattern selection */
+.limit-overlay, .loading-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 40px;
+  background: rgba(0, 0, 0, 0.85);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--accent-blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Pattern Grid */
 .pattern-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 16px;
-  margin-bottom: 32px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
 }
 
 .pattern-option {
@@ -136,23 +242,66 @@ body {
 .pattern-input {
   position: absolute;
   opacity: 0;
+  pointer-events: none;
 }
 
 .pattern-card {
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.02);
   border: 2px solid transparent;
   border-radius: 12px;
   text-align: center;
   transition: all 0.2s;
+  overflow: hidden;
 }
 
 .pattern-input:checked + .pattern-card {
   border-color: var(--accent-blue);
-  background: rgba(0, 210, 255, 0.05);
+  background: rgba(0, 210, 255, 0.04);
+}
+
+.pattern-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.pattern-preview-img {
+  width: 100%;
+  aspect-ratio: 1200 / 630;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  display: block;
 }
 
 .pattern-name {
   font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.pattern-desc {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+/* Tip Card */
+.tip-card {
+  margin-top: 32px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 14px;
+  text-align: left;
+  border: 1px solid var(--border-color);
+}
+
+.code-block {
+  display: block;
+  margin-top: 10px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  color: var(--accent-blue);
+  word-break: break-all;
+  line-height: 1.5;
 }
