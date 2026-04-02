@@ -11,7 +11,6 @@ const FONT_URLS: Record<string, string> = {
   'inter': 'https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYMZg.ttf',
 };
 
-// Color themes: [bg gradient, accent, text primary, text secondary, type badge bg]
 type ColorTheme = {
   bg: string;
   accent: string;
@@ -31,7 +30,7 @@ const COLOR_THEMES: Record<string, ColorTheme> = {
     accent: '#ff3366',
     textPrimary: '#ffffff',
     textSecondary: 'rgba(255,255,255,0.7)',
-    badgeBg: 'rgba(255,255,255,0.1)',
+    badgeBg: 'rgba(255,255,255,0.12)',
     badgeText: '#ff3366',
     glassBg: 'rgba(0,0,0,0.4)',
     glassBorder: 'rgba(255,255,255,0.15)',
@@ -79,7 +78,7 @@ const COLOR_THEMES: Record<string, ColorTheme> = {
     accent: '#2563eb',
     textPrimary: '#1e293b',
     textSecondary: 'rgba(30,41,59,0.65)',
-    badgeBg: 'rgba(37,99,235,0.1)',
+    badgeBg: 'rgba(37,99,235,0.12)',
     badgeText: '#2563eb',
     glassBg: 'rgba(255,255,255,0.6)',
     glassBorder: 'rgba(37,99,235,0.15)',
@@ -91,7 +90,7 @@ const COLOR_THEMES: Record<string, ColorTheme> = {
     accent: '#059669',
     textPrimary: '#1e293b',
     textSecondary: 'rgba(30,41,59,0.65)',
-    badgeBg: 'rgba(5,150,105,0.1)',
+    badgeBg: 'rgba(5,150,105,0.12)',
     badgeText: '#059669',
     glassBg: 'rgba(255,255,255,0.6)',
     glassBorder: 'rgba(5,150,105,0.15)',
@@ -103,7 +102,7 @@ const COLOR_THEMES: Record<string, ColorTheme> = {
     accent: '#c2410c',
     textPrimary: '#1e293b',
     textSecondary: 'rgba(30,41,59,0.65)',
-    badgeBg: 'rgba(194,65,12,0.1)',
+    badgeBg: 'rgba(194,65,12,0.12)',
     badgeText: '#c2410c',
     glassBg: 'rgba(255,255,255,0.6)',
     glassBorder: 'rgba(194,65,12,0.15)',
@@ -115,7 +114,7 @@ const COLOR_THEMES: Record<string, ColorTheme> = {
     accent: '#7c3aed',
     textPrimary: '#1e293b',
     textSecondary: 'rgba(30,41,59,0.65)',
-    badgeBg: 'rgba(124,58,237,0.1)',
+    badgeBg: 'rgba(124,58,237,0.12)',
     badgeText: '#7c3aed',
     glassBg: 'rgba(255,255,255,0.6)',
     glassBorder: 'rgba(124,58,237,0.15)',
@@ -128,6 +127,39 @@ async function loadFont(fontKey: string): Promise<ArrayBuffer> {
   const url = FONT_URLS[fontKey] || FONT_URLS['noto-sans-jp'];
   const res = await fetch(url);
   return res.arrayBuffer();
+}
+
+// Auto font-size: estimate how many rows the title will take
+// and shrink to fit within the available height
+function calcTitleFontSize(text: string, maxWidth: number): number {
+  // Average char width ~= fontSize * 0.55 for latin, ~= fontSize * 1.0 for CJK
+  const hasCJK = /[\u3000-\u9fff\uf900-\ufaff]/.test(text);
+  const avgCharWidth = hasCJK ? 1.0 : 0.55;
+
+  // Try sizes from large to small
+  const sizes = [80, 72, 64, 56, 48, 42, 36, 32, 28];
+  for (const size of sizes) {
+    const lineWidth = maxWidth;
+    const charsPerLine = Math.floor(lineWidth / (size * avgCharWidth));
+    const lines = Math.ceil(text.length / charsPerLine);
+    const totalHeight = lines * size * 1.3; // line-height 1.3
+    // Keep within ~300px of vertical space for title
+    if (totalHeight <= 320) return size;
+  }
+  return 28;
+}
+
+function calcTypeFontSize(text: string): number {
+  if (text.length <= 4) return 32;
+  if (text.length <= 8) return 28;
+  if (text.length <= 15) return 24;
+  return 20;
+}
+
+function calcInfoFontSize(text: string): number {
+  if (text.length <= 20) return 28;
+  if (text.length <= 40) return 24;
+  return 20;
 }
 
 export async function GET(req: NextRequest) {
@@ -150,25 +182,41 @@ export async function GET(req: NextRequest) {
   const theme = COLOR_THEMES[colorKey] || COLOR_THEMES['dark-blue'];
   const isDark = colorKey.startsWith('dark');
 
-  // Background: try external image if requested, fallback to gradient
+  // ===== Background image fetching =====
   let bgSrc = '';
   if (source === 'pollinations' || source === 'unsplash') {
     try {
       let bgUrl = '';
       if (source === 'unsplash') {
-        bgUrl = `https://source.unsplash.com/1200x630/?${encodeURIComponent(query || title)}`;
+        // Unsplash official API (requires Access Key set in env)
+        const unsplashKey = process.env.UNSPLASH_ACCESS_KEY;
+        if (unsplashKey) {
+          const searchUrl = `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query || title)}&orientation=landscape&w=1200&client_id=${unsplashKey}`;
+          const apiRes = await fetch(searchUrl);
+          if (apiRes.ok) {
+            const data = await apiRes.json();
+            bgUrl = data.urls?.regular || '';
+          }
+        }
       } else {
+        // Pollinations API
+        const pollinationsKey = process.env.POLLINATIONS_API_KEY;
         const prompt = encodeURIComponent(
           `abstract background: ${query || title}, minimalist, no text, digital art`
         );
         bgUrl = `https://image.pollinations.ai/prompt/${prompt}?width=1200&height=630&nologo=true&seed=${seed}`;
+        if (pollinationsKey) {
+          bgUrl += `&token=${pollinationsKey}`;
+        }
       }
-      const bgRes = await fetch(bgUrl, { redirect: 'follow' });
-      const contentType = bgRes.headers.get('content-type') || '';
-      if (bgRes.ok && contentType.startsWith('image/')) {
-        const buf = await bgRes.arrayBuffer();
-        const ext = contentType.includes('jpeg') || contentType.includes('jpg') ? 'jpeg' : 'png';
-        bgSrc = `data:image/${ext};base64,${Buffer.from(buf).toString('base64')}`;
+      if (bgUrl) {
+        const bgRes = await fetch(bgUrl, { redirect: 'follow' });
+        const contentType = bgRes.headers.get('content-type') || '';
+        if (bgRes.ok && contentType.startsWith('image/')) {
+          const buf = await bgRes.arrayBuffer();
+          const ext = contentType.includes('jpeg') || contentType.includes('jpg') ? 'jpeg' : 'png';
+          bgSrc = `data:image/${ext};base64,${Buffer.from(buf).toString('base64')}`;
+        }
       }
     } catch {
       // fallback to gradient
@@ -179,21 +227,15 @@ export async function GET(req: NextRequest) {
   const isNeon = pattern === 'neon';
   const isGlass = pattern === 'glass';
 
-  // Dynamic font sizes: use full width (1200px) minus padding
-  let titleFontSize = 72;
-  if (title.length > 15) titleFontSize = 64;
-  if (title.length > 25) titleFontSize = 52;
-  if (title.length > 40) titleFontSize = 44;
-  if (title.length > 60) titleFontSize = 36;
-  if (title.length > 80) titleFontSize = 30;
+  // Layout: full width for most patterns, constrained for glass
+  const contentWidth = isGlass ? 900 : 1100;
+  const textAreaWidth = contentWidth - 100;
 
-  // Glass pattern: a card in the center
-  // Other patterns: full-width layout
-  const useFullWidth = !isGlass;
-  const contentWidth = useFullWidth ? 1100 : 900;
-  const contentPadding = useFullWidth ? '60px 50px' : '40px 60px';
+  // Auto font sizes
+  const titleFontSize = calcTitleFontSize(title, textAreaWidth);
+  const typeFontSize = calcTypeFontSize(type);
+  const infoFontSize = calcInfoFontSize(info);
 
-  // Accent colors for the overlay when image bg is present
   const overlayBg = bgSrc
     ? (isDark
         ? 'linear-gradient(180deg, rgba(0,0,0,0.3), rgba(0,0,0,0.75))'
@@ -215,7 +257,7 @@ export async function GET(req: NextRequest) {
           fontFamily: fontFamily,
         }}
       >
-        {/* Background Image (if available) */}
+        {/* Background Image */}
         {bgSrc && (
           <img
             src={bgSrc}
@@ -232,7 +274,7 @@ export async function GET(req: NextRequest) {
           />
         )}
 
-        {/* Overlay for readability on image bg */}
+        {/* Overlay for readability */}
         {bgSrc && (
           <div
             style={{
@@ -246,7 +288,7 @@ export async function GET(req: NextRequest) {
           />
         )}
 
-        {/* Decorative Elements for gradient mode */}
+        {/* Decorative glow orbs (gradient mode + dark) */}
         {!bgSrc && isDark && (
           <div style={{
             position: 'absolute',
@@ -283,24 +325,24 @@ export async function GET(req: NextRequest) {
             height: isGlass ? 500 : 550,
             backgroundColor: isGlass ? theme.glassBg : 'transparent',
             borderRadius: isGlass ? 32 : 0,
-            padding: contentPadding,
+            padding: isGlass ? '40px 60px' : '60px 50px',
             textAlign: isMinimal ? 'left' : 'center',
             border: isGlass ? `1px solid ${theme.glassBorder}` : 'none',
           }}
         >
-          {/* Type Label */}
+          {/* Type Label — now larger with auto-sizing */}
           {type && (
             <div
               style={{
-                fontSize: isMinimal ? 22 : 24,
+                fontSize: typeFontSize,
                 fontWeight: 700,
                 color: isNeon ? theme.neonAccent : theme.badgeText,
                 marginBottom: 24,
                 letterSpacing: isMinimal ? 1 : 3,
                 display: 'flex',
                 alignItems: 'center',
-                padding: isMinimal ? '0' : '8px 24px',
-                borderRadius: 8,
+                padding: isMinimal ? '0' : '10px 28px',
+                borderRadius: 10,
                 backgroundColor: isMinimal ? 'transparent' : theme.badgeBg,
                 textShadow: isNeon ? `${theme.neonGlow}` : 'none',
               }}
@@ -309,13 +351,13 @@ export async function GET(req: NextRequest) {
             </div>
           )}
 
-          {/* Title */}
+          {/* Title — auto-sized */}
           <div
             style={{
               fontSize: titleFontSize,
               fontWeight: 900,
               color: theme.textPrimary,
-              lineHeight: 1.25,
+              lineHeight: 1.3,
               marginBottom: 28,
               display: 'flex',
               flexWrap: 'wrap',
@@ -324,17 +366,17 @@ export async function GET(req: NextRequest) {
                 : isDark
                   ? '0 3px 10px rgba(0,0,0,0.4)'
                   : 'none',
-              maxWidth: contentWidth - 100,
+              maxWidth: textAreaWidth,
             }}
           >
             {title}
           </div>
 
-          {/* Info */}
+          {/* Info — auto-sized */}
           {info && (
             <div
               style={{
-                fontSize: 24,
+                fontSize: infoFontSize,
                 fontWeight: 500,
                 color: theme.textSecondary,
                 display: 'flex',
@@ -348,7 +390,7 @@ export async function GET(req: NextRequest) {
           )}
         </div>
 
-        {/* Bottom accent line for classic/minimal */}
+        {/* Bottom accent line */}
         {!isGlass && !isNeon && !bgSrc && (
           <div style={{
             position: 'absolute',

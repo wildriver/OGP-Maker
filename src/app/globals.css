@@ -153,11 +153,25 @@ body {
   font-size: 1.05rem;
 }
 
+.primary-btn {
+  background: linear-gradient(135deg, #059669, #0891b2);
+  font-size: 0.9rem;
+  padding: 12px 14px;
+}
+
 .secondary-btn {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-color);
   font-size: 0.9rem;
-  padding: 10px 14px;
+  padding: 12px 14px;
+}
+
+/* Hint inline */
+.hint-inline {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-left: 8px;
+  font-weight: 400;
 }
 
 /* Usage bar */

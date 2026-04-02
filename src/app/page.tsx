@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Download, Copy, RefreshCcw, Settings, ImageIcon } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Download, Copy, Settings, ImageIcon } from 'lucide-react';
 
 const PATTERNS = [
   { id: 'classic', name: 'クラシック', desc: 'グラデーションオーバーレイ', img: '/pattern-classic.png' },
@@ -52,6 +52,7 @@ export default function Home() {
   const [usage, setUsage] = useState(0);
   const [previewKey, setPreviewKey] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -95,6 +96,31 @@ export default function Home() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Download image as PNG file
+  const downloadImage = useCallback(async () => {
+    setDownloading(true);
+    try {
+      const res = await fetch(ogUrl);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      // Create a filename from the title (sanitized)
+      const safeName = formData.title
+        .replace(/[^\w\u3000-\u9fff\uff00-\uffef-]/g, '_')
+        .substring(0, 40);
+      a.download = `ogp_${safeName}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('ダウンロードに失敗しました。');
+    } finally {
+      setDownloading(false);
+    }
+  }, [ogUrl, formData.title]);
+
   return (
     <main className="container">
       <header className="header">
@@ -120,7 +146,7 @@ export default function Home() {
 
           {/* Title */}
           <div className="form-group">
-            <label className="label">タイトル</label>
+            <label className="label">タイトル<span className="hint-inline">（長さに応じてフォントサイズが自動調整されます）</span></label>
             <input name="title" className="input" placeholder="メインタイトルを入力" value={formData.title} onChange={handleChange} />
           </div>
 
@@ -164,7 +190,9 @@ export default function Home() {
                   onChange={handleChange}
                 />
                 <p className="hint">
-                  ⚠ 外部サービスが一時的に利用できない場合、カラー背景にフォールバックします
+                  {formData.source === 'pollinations'
+                    ? '💡 サーバー側に環境変数 POLLINATIONS_API_KEY を設定すると利用できます'
+                    : '💡 サーバー側に環境変数 UNSPLASH_ACCESS_KEY を設定すると利用できます'}
                 </p>
               </>
             )}
@@ -205,12 +233,12 @@ export default function Home() {
 
           {/* Action Buttons */}
           <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-            <button className="button secondary-btn" onClick={copyUrl}>
-              <Copy size={18} /> {copied ? 'コピーしました！' : 'OGP URLをコピー'}
+            <button className="button primary-btn" onClick={downloadImage} disabled={downloading}>
+              <Download size={18} /> {downloading ? 'ダウンロード中...' : 'PNGをダウンロード'}
             </button>
-            <a href={ogUrl} target="_blank" className="button secondary-btn" rel="noopener noreferrer">
-              <Download size={18} /> フルサイズで開く
-            </a>
+            <button className="button secondary-btn" onClick={copyUrl}>
+              <Copy size={18} /> {copied ? 'コピーしました！' : 'URLをコピー'}
+            </button>
           </div>
 
           {/* Usage Bar */}
@@ -259,10 +287,10 @@ export default function Home() {
           {/* How to use */}
           <div className="tip-card">
             <h3 style={{ fontSize: '0.95rem', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Settings size={16} /> 使い方
+              <Settings size={16} /> OGPタグとして使う場合
             </h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-              生成されたURLをHTMLの<code>&lt;meta&gt;</code>タグに設定してください：
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '8px' }}>
+              画像をダウンロードしてサイトに配置するか、URLをそのまま<code>&lt;meta&gt;</code>タグに設定：
             </p>
             <code className="code-block">
               &lt;meta property=&quot;og:image&quot; content=&quot;https://your-domain.com{ogUrl}&quot; /&gt;
