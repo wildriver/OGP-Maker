@@ -68,7 +68,15 @@ body {
 }
 
 .field { display: flex; flex-direction: column; gap: 8px; }
-.field-label { font-size: var(--font-xs); font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+.field-label {
+  font-size: var(--font-xs);
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-left: 3px solid var(--accent); /* 青い棒を追加 */
+  padding-left: 10px;
+}
 .input, .textarea { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-primary); font-size: var(--font-base); padding: 10px 14px; }
 .input:focus, .textarea:focus { border-color: var(--accent); outline: none; }
 
