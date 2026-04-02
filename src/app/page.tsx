@@ -112,142 +112,135 @@ export default function Home() {
   }, [ogUrl, formData.title]);
 
   return (
-    <div className="app-wrapper">
-      {/* 左側: 設定・背景ブロック */}
-      <aside className="sidebar">
-        <h2 className="sidebar-title">設定</h2>
+    <div className="app-container">
+      {/* 復活したヘッダー */}
+      <header className="app-header">
+        <h1>OGP Maker</h1>
+        <p>AI背景 × テキストオーバーレイで、SNS映えする画像を生成</p>
+      </header>
 
-        <div className="form-group">
-          <label className="label">コンテンツタイプ</label>
-          <input name="type" className="input" placeholder="採択" value={formData.type} onChange={handleChange} />
-        </div>
-
-        <div className="form-group">
-          <label className="label">タイトル</label>
-          <textarea 
-            name="title" 
-            className="input" 
-            rows={3} 
-            placeholder="メインタイトルを入力" 
-            style={{ resize: 'none' }}
-            value={formData.title} 
-            onChange={handleChange} 
-          />
-        </div>
-
-        <div className="form-group">
-          <label className="label">補足情報</label>
-          <input name="info" className="input" placeholder="Arakawa Lab | IEEE 2026" value={formData.info} onChange={handleChange} />
-        </div>
-
-        <div className="form-group">
-          <label className="label">フォント</label>
-          <select name="font" className="select" value={formData.font} onChange={handleChange}>
-            {FONTS.map((f) => (
-              <option key={f.id} value={f.id}>{f.name}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="form-group" style={{ marginTop: 'auto' }}>
-          <label className="label">背景</label>
-          <div className="tabs">
-            {BG_SOURCES.map((s) => (
-              <div 
-                key={s.id} 
-                className={`tab-item ${formData.source === s.id ? 'active' : ''}`}
-                onClick={() => setFormData({ ...formData, source: s.id })}
-              >
-                {s.label.split(' ')[1]}
-              </div>
-            ))}
+      <div className="workspace">
+        {/* 左側: 設定サイドバー */}
+        <aside className="sidebar">
+          {/* 基本設定 */}
+          <div className="sidebar-section">
+            <h3 className="section-label">📋 基本設定</h3>
+            <div className="form-group" style={{ marginBottom: '16px' }}>
+              <label className="label">コンテンツタイプ</label>
+              <input name="type" className="input" placeholder="採択" value={formData.type} onChange={handleChange} />
+            </div>
+            <div className="form-group" style={{ marginBottom: '16px' }}>
+              <label className="label">タイトル</label>
+              <textarea 
+                name="title" 
+                className="input" 
+                rows={3} 
+                style={{ resize: 'none' }} 
+                value={formData.title} 
+                onChange={handleChange} 
+              />
+            </div>
+            <div className="form-group">
+              <label className="label">補足情報</label>
+              <input name="info" className="input" placeholder="Arakawa Lab" value={formData.info} onChange={handleChange} />
+            </div>
           </div>
 
-          {formData.source === 'gradient' && (
-            <div className="swatch-grid animate-fade-in">
-              {COLOR_PRESETS.map((c) => (
-                <div
-                  key={c.id}
-                  className={`swatch ${formData.color === c.id ? 'active' : ''}`}
-                  style={{ background: `linear-gradient(135deg, ${c.colors[0]}, ${c.colors[1]})` }}
-                  onClick={() => setFormData({ ...formData, color: c.id })}
-                />
+          {/* フォント設定 */}
+          <div className="sidebar-section">
+            <h3 className="section-label">🖋 フォント</h3>
+            <select name="font" className="select" value={formData.font} onChange={handleChange}>
+              {FONTS.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+            </select>
+          </div>
+
+          {/* 背景設定 (ボトム張り付きを解除) */}
+          <div className="sidebar-section">
+            <h3 className="section-label">🖼 背景</h3>
+            <div className="tabs">
+              {BG_SOURCES.map(s => (
+                <div 
+                  key={s.id} 
+                  className={`tab-item ${formData.source === s.id ? 'active' : ''}`}
+                  onClick={() => setFormData(prev => ({ ...prev, source: s.id }))}
+                >
+                  {s.label.split(' ')[1]}
+                </div>
               ))}
             </div>
-          )}
 
-          {formData.source !== 'gradient' && (
-            <div className="animate-fade-in">
-              <input
-                name="query"
-                className="input"
-                placeholder={formData.source === 'pollinations' ? 'AIプロンプトを入力' : '写真キーワードを入力'}
-                value={formData.query}
-                onChange={handleChange}
-              />
-              <button className="btn-regenerate" onClick={generatePreview} disabled={isOverLimit}>
-                {loading ? '生成中...' : '🔄 背景を再構成'}
-              </button>
-            </div>
-          )}
-        </div>
-
-        <div style={{ marginTop: '24px', fontSize: '0.7rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
-          残り利用回数: {maxLimit - usage} / {maxLimit}
-        </div>
-      </aside>
-
-      {/* 右側: 3段構成メインコンテンツ */}
-      <main className="main-content">
-        {/* 上段: デザインブロック */}
-        <section className="patterns-area">
-          <div className="label">レイアウトパターン</div>
-          <div className="patterns-row">
-            {PATTERNS.map((p) => (
-              <div 
-                key={p.id} 
-                className={`pattern-card ${formData.pattern === p.id ? 'active' : ''}`}
-                onClick={() => setFormData({ ...formData, pattern: p.id })}
-              >
-                <div className="pattern-thumb">
-                  <img src={p.img} alt={p.name} />
-                </div>
-                <div className="pattern-name">{p.name}</div>
+            {formData.source === 'gradient' ? (
+              <div className="swatch-grid animate-fade-in">
+                {COLOR_PRESETS.map(c => (
+                  <div 
+                    key={c.id} 
+                    className={`swatch ${formData.color === c.id ? 'active' : ''}`}
+                    style={{ background: `linear-gradient(135deg, ${c.colors[0]}, ${c.colors[1]})` }}
+                    onClick={() => setFormData(prev => ({ ...prev, color: c.id }))}
+                  />
+                ))}
               </div>
-            ))}
+            ) : (
+              <div className="animate-fade-in">
+                <input 
+                  name="query" 
+                  className="input" 
+                  placeholder={formData.source === 'pollinations' ? 'AIへの指示' : 'キーワード検索'} 
+                  value={formData.query} 
+                  onChange={handleChange} 
+                />
+                <button className="btn-secondary" onClick={generatePreview} disabled={isOverLimit}>
+                  {loading ? '生成中...' : '🔄 背景を再構成'}
+                </button>
+              </div>
+            )}
           </div>
-        </section>
 
-        {/* 中段: プレビュー画面 */}
-        <section className="canvas-area">
-          <div className="preview-container">
-            <div className="ogp-image-box">
-              {loading && (
-                <div className="loading-indicator">
-                  <div className="spinner"></div>
+          <div style={{ marginTop: 'auto', textAlign: 'center', fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+            本日利用: {usage} / {maxLimit} 回分
+          </div>
+        </aside>
+
+        {/* 右側: 制作エリア */}
+        <main className="main-content">
+          <section className="patterns-section">
+            <h3 className="section-label">🧩 レイアウトパターン</h3>
+            <div className="patterns-scroll">
+              {PATTERNS.map(p => (
+                <div 
+                  key={p.id} 
+                  className={`pattern-card ${formData.pattern === p.id ? 'active' : ''}`}
+                  onClick={() => setFormData(prev => ({ ...prev, pattern: p.id }))}
+                >
+                  <div className="pattern-thumb"><img src={p.img} alt={p.name} /></div>
+                  <div className="pattern-name">{p.name}</div>
                 </div>
-              )}
-              <img 
-                src={ogUrl} 
-                alt="OGP Preview" 
-                className="ogp-image" 
-                key={previewKey} 
-                onLoad={() => setLoading(false)} 
-                onError={() => setLoading(false)} 
-              />
+              ))}
             </div>
-            <div className="resolution-label">1200 × 630</div>
-          </div>
-        </section>
+          </section>
 
-        {/* 下段: PNGダウンロード */}
-        <footer className="export-area">
-          <button className="btn-primary" onClick={downloadImage} disabled={downloading}>
-            <Download size={20} />
-            {downloading ? '保存中...' : 'PNGをダウンロード'}
-          </button>
-        </footer>
-      </main>
+          <section className="canvas-section">
+            <div className="preview-wrapper">
+              <div className="image-container">
+                {loading && (
+                  <div className="loading-indicator">
+                    <div className="spinner"></div>
+                  </div>
+                )}
+                <img src={ogUrl} alt="Preview" className="ogp-img" key={previewKey} onLoad={() => setLoading(false)} onError={() => setLoading(false)} />
+              </div>
+              <div style={{ textAlign: 'right', marginTop: '12px', color: '#9ca3af', fontSize: '0.75rem' }}>1200 × 630</div>
+            </div>
+          </section>
+
+          <footer className="action-footer">
+            <button className="btn-primary" onClick={downloadImage} disabled={downloading}>
+              <Download size={22} />
+              {downloading ? '保存中...' : 'PNGをダウンロード'}
+            </button>
+          </footer>
+        </main>
+      </div>
     </div>
   );
 }
