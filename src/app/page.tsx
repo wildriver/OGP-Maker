@@ -231,13 +231,9 @@ export default function Home() {
             {loading ? '生成中...' : '🔄 背景を再生成する'}
           </button>
 
-          {/* Action Buttons */}
-          <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-            <button className="button primary-btn" onClick={downloadImage} disabled={downloading}>
-              <Download size={18} /> {downloading ? 'ダウンロード中...' : 'PNGをダウンロード'}
-            </button>
-            <button className="button secondary-btn" onClick={copyUrl}>
-              <Copy size={18} /> {copied ? 'コピーしました！' : 'URLをコピー'}
+          <div style={{ display: 'flex', gap: '12px', marginTop: '16px', justifyContent: 'center' }}>
+            <button className="button primary-btn" style={{ width: '100%', maxWidth: '300px' }} onClick={downloadImage} disabled={downloading}>
+              <Download size={18} /> {downloading ? 'ダウンロード中...' : '📥 PNGをダウンロード'}
             </button>
           </div>
 
@@ -284,18 +280,6 @@ export default function Home() {
             )}
           </div>
 
-          {/* How to use */}
-          <div className="tip-card">
-            <h3 style={{ fontSize: '0.95rem', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Settings size={16} /> OGPタグとして使う場合
-            </h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '8px' }}>
-              画像をダウンロードしてサイトに配置するか、URLをそのまま<code>&lt;meta&gt;</code>タグに設定：
-            </p>
-            <code className="code-block">
-              &lt;meta property=&quot;og:image&quot; content=&quot;https://your-domain.com{ogUrl}&quot; /&gt;
-            </code>
-          </div>
         </section>
       </div>
 

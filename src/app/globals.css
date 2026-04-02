@@ -21,9 +21,9 @@ body {
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 60px 24px;
+  padding: 40px 24px;
 }
 
 .header {
@@ -41,14 +41,15 @@ body {
 
 .main-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 48px;
+  grid-template-columns: 460px 1fr;
+  gap: 40px;
   align-items: start;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .main-grid {
     grid-template-columns: 1fr;
+    gap: 32px;
   }
 }
 
@@ -191,6 +192,8 @@ body {
 
 /* Preview */
 .preview-section {
+  position: sticky;
+  top: 40px;
   text-align: center;
 }
 
