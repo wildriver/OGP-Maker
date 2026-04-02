@@ -241,9 +241,11 @@ export async function GET(req: NextRequest) {
   const isMinimal = pattern === 'minimal';
   const isNeon = pattern === 'neon';
   const isGlass = pattern === 'glass';
+  const isFull = pattern === 'full';
+  const isColumns = pattern === 'columns';
 
   // Layout: full width for most patterns, constrained for glass
-  const contentWidth = isGlass ? 900 : 1100;
+  const contentWidth = isGlass ? 900 : isColumns ? 720 : 1100;
   const textAreaWidth = contentWidth - 100;
 
   // Auto font sizes
@@ -256,6 +258,56 @@ export async function GET(req: NextRequest) {
         ? 'linear-gradient(180deg, rgba(0,0,0,0.3), rgba(0,0,0,0.75))'
         : 'linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0.8))')
     : 'transparent';
+
+  // === COLUMNS layout: left text + right accent panel ===
+  if (isColumns) {
+    return new ImageResponse(
+      (
+        <div style={{ height: '100%', width: '100%', display: 'flex', background: theme.bg, position: 'relative', fontFamily: fontFamily }}>
+          {bgSrc && <img src={bgSrc} width={1200} height={630} style={{ position: 'absolute', top: 0, left: 0, width: 1200, height: 630, objectFit: 'cover' }} />}
+          {bgSrc && <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: overlayBg }} />}
+          {/* Left: Text content */}
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', width: 720, padding: '60px 70px', position: 'relative' }}>
+            {type && <div style={{ fontSize: typeFontSize, fontWeight: 700, color: theme.badgeText, marginBottom: 20, display: 'flex', alignItems: 'center', padding: '8px 24px', borderRadius: 8, backgroundColor: theme.badgeBg, letterSpacing: 2 }}>{type}</div>}
+            <div style={{ fontSize: titleFontSize, fontWeight: 900, color: theme.textPrimary, lineHeight: 1.3, marginBottom: 24, display: 'flex', flexWrap: 'wrap', textShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : 'none', maxWidth: 580 }}>{title}</div>
+            {info && <div style={{ fontSize: infoFontSize, fontWeight: 500, color: theme.textSecondary, display: 'flex' }}>{info}</div>}
+          </div>
+          {/* Right: Accent panel */}
+          <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+            <div style={{ width: 4, height: '60%', background: `linear-gradient(180deg, transparent, ${theme.accent}, transparent)`, position: 'absolute', left: 0, display: 'flex' }} />
+            <div style={{ width: 200, height: 200, borderRadius: 9999, background: `radial-gradient(circle, ${theme.accent}33, transparent 70%)`, display: 'flex' }} />
+          </div>
+        </div>
+      ),
+      { width: 1200, height: 630, fonts: [{ name: fontFamily, data: fontData, style: 'normal' as const, weight: 400 }] },
+    );
+  }
+
+  // === FULL layout: bottom-bar text with heavy gradient overlay ===
+  if (isFull) {
+    return new ImageResponse(
+      (
+        <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', background: theme.bg, position: 'relative', fontFamily: fontFamily }}>
+          {bgSrc && <img src={bgSrc} width={1200} height={630} style={{ position: 'absolute', top: 0, left: 0, width: 1200, height: 630, objectFit: 'cover' }} />}
+          {/* Top gradient fade */}
+          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: isDark ? 'linear-gradient(180deg, transparent 20%, rgba(0,0,0,0.85) 100%)' : 'linear-gradient(180deg, transparent 20%, rgba(255,255,255,0.9) 100%)', display: 'flex' }} />
+          {/* Decorative orbs */}
+          {!bgSrc && isDark && <div style={{ position: 'absolute', top: -50, right: -50, width: 300, height: 300, borderRadius: 9999, background: `radial-gradient(circle, ${theme.accent}22, transparent 70%)`, display: 'flex' }} />}
+          {/* Bottom content bar */}
+          <div style={{ display: 'flex', flexDirection: 'column', position: 'absolute', bottom: 0, left: 0, width: '100%', padding: '50px 80px', gap: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+              {type && <div style={{ fontSize: typeFontSize - 4, fontWeight: 700, color: theme.badgeText, padding: '6px 20px', borderRadius: 6, backgroundColor: theme.badgeBg, letterSpacing: 2, display: 'flex' }}>{type}</div>}
+              {info && <div style={{ fontSize: infoFontSize - 4, fontWeight: 500, color: theme.textSecondary, display: 'flex' }}>{info}</div>}
+            </div>
+            <div style={{ fontSize: titleFontSize, fontWeight: 900, color: theme.textPrimary, lineHeight: 1.25, display: 'flex', flexWrap: 'wrap', textShadow: isDark ? '0 2px 10px rgba(0,0,0,0.5)' : 'none', maxWidth: 1040 }}>{title}</div>
+          </div>
+          {/* Bottom accent line */}
+          <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: 5, background: `linear-gradient(90deg, ${theme.accent}, ${theme.accent}44, transparent)`, display: 'flex' }} />
+        </div>
+      ),
+      { width: 1200, height: 630, fonts: [{ name: fontFamily, data: fontData, style: 'normal' as const, weight: 400 }] },
+    );
+  }
 
   return new ImageResponse(
     (
@@ -345,7 +397,7 @@ export async function GET(req: NextRequest) {
             border: isGlass ? `1px solid ${theme.glassBorder}` : 'none',
           }}
         >
-          {/* Type Label — now larger with auto-sizing */}
+          {/* Type Label */}
           {type && (
             <div
               style={{
@@ -366,7 +418,7 @@ export async function GET(req: NextRequest) {
             </div>
           )}
 
-          {/* Title — auto-sized */}
+          {/* Title */}
           <div
             style={{
               fontSize: titleFontSize,
@@ -387,7 +439,7 @@ export async function GET(req: NextRequest) {
             {title}
           </div>
 
-          {/* Info — auto-sized */}
+          {/* Info */}
           {info && (
             <div
               style={{

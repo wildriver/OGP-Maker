@@ -4,238 +4,179 @@ import { useState, useEffect, useCallback } from 'react';
 import { Download } from 'lucide-react';
 
 const PATTERNS = [
-  { id: 'glass', name: 'グラス', img: '/pattern-glass.png' },
-  { id: 'classic', name: 'グラデーション', img: '/pattern-classic.png' },
-  { id: 'topbar', name: 'トップバー', img: '/pattern-neon.png' },
-  { id: 'bottombar', name: 'ボトムバー', img: '/pattern-minimal.png' },
-  { id: 'full', name: 'フルイメージ', img: '/pattern-classic.png' },
-  { id: 'columns', name: '2カラム', img: '/pattern-glass.png' },
+  { id: 'glass',    name: 'グラス',         img: '/pattern-glass.png' },
+  { id: 'classic',  name: 'センター',       img: '/pattern-classic.png' },
+  { id: 'neon',     name: 'ネオン',         img: '/pattern-neon.png' },
+  { id: 'minimal',  name: 'ミニマル',       img: '/pattern-minimal.png' },
+  { id: 'full',     name: 'ボトムバー',     img: '/pattern-neon.png' },
+  { id: 'columns',  name: '2カラム',        img: '/pattern-minimal.png' },
 ];
 
 const FONTS = [
-  { id: 'noto-sans-jp', name: 'Noto Sans JP', type: 'ゴシック体', family: "'Noto Sans JP', sans-serif" },
-  { id: 'noto-serif-jp', name: 'Noto Serif JP', type: '明朝体', family: "'Noto Serif JP', serif" },
-  { id: 'm-plus-rounded', name: 'M PLUS Rounded', type: '丸ゴシック体', family: "'M PLUS Rounded 1c', sans-serif" },
-  { id: 'inter', name: 'Inter', type: '英語向けサンセリフ', family: "Inter, sans-serif" },
+  { id: 'noto-sans-jp',   name: 'Noto Sans JP',    desc: 'ゴシック体' },
+  { id: 'noto-serif-jp',  name: 'Noto Serif JP',   desc: '明朝体' },
+  { id: 'm-plus-rounded', name: 'M PLUS Rounded',  desc: '丸ゴシック体' },
+  { id: 'inter',          name: 'Inter',            desc: '英語向けサンセリフ' },
 ];
 
 const COLOR_PRESETS = [
-  { id: 'dark-blue', name: 'ダーク・ブルー', colors: ['#0f0c29', '#302b63'], isLight: false },
-  { id: 'dark-green', name: 'ダーク・グリーン', colors: ['#0a1a0f', '#1a3a2a'], isLight: false },
-  { id: 'dark-purple', name: 'ダーク・パープル', colors: ['#1a0a2e', '#2d1b69'], isLight: false },
-  { id: 'dark-warm', name: 'ダーク・ウォーム', colors: ['#1a0a00', '#2d1500'], isLight: false },
-  { id: 'light-blue', name: 'ライト・ブルー', colors: ['#e0f2fe', '#bae6fd'], isLight: true },
-  { id: 'light-green', name: 'ライト・グリーン', colors: ['#ecfdf5', '#d1fae5'], isLight: true },
-  { id: 'light-warm', name: 'ライト・ウォーム', colors: ['#fff7ed', '#fed7aa'], isLight: true },
-  { id: 'light-purple', name: 'ライト・パープル', colors: ['#f5f3ff', '#ede9fe'], isLight: true },
+  { id: 'dark-blue',    label: 'Blue',   colors: ['#0f0c29', '#302b63'], light: false },
+  { id: 'dark-green',   label: 'Green',  colors: ['#0a1a0f', '#1a3a2a'], light: false },
+  { id: 'dark-purple',  label: 'Purple', colors: ['#1a0a2e', '#2d1b69'], light: false },
+  { id: 'dark-warm',    label: 'Warm',   colors: ['#1a0a00', '#2d1500'], light: false },
+  { id: 'light-blue',   label: 'Blue',   colors: ['#e0f2fe', '#bae6fd'], light: true },
+  { id: 'light-green',  label: 'Green',  colors: ['#ecfdf5', '#d1fae5'], light: true },
+  { id: 'light-warm',   label: 'Warm',   colors: ['#fff7ed', '#fed7aa'], light: true },
+  { id: 'light-purple', label: 'Purple', colors: ['#f5f3ff', '#ede9fe'], light: true },
 ];
 
-const BG_SOURCES = [
-  { id: 'gradient', label: '🎨 カラー', icon: '🎨' },
-  { id: 'pollinations', label: '✨ AI生成', icon: '✨' },
-  { id: 'unsplash', label: '📷 写真素材', icon: '📷' },
+const BG_TABS = [
+  { id: 'gradient',     label: 'カラー' },
+  { id: 'pollinations', label: 'AI生成' },
+  { id: 'unsplash',     label: '写真素材' },
 ];
 
 const getTodayDate = () => new Date().toISOString().split('T')[0];
 
 export default function Home() {
-  const [formData, setFormData] = useState({
-    type: '採択',
-    title: '大規模言語モデルによる研究支援の新展開',
-    info: 'Arakawa Lab | IEEE 2026',
-    pattern: 'glass',
-    seed: '42',
-    source: 'gradient',
-    query: '',
-    font: 'noto-sans-jp',
-    color: 'dark-blue',
+  const [form, setForm] = useState({
+    type: '採択', title: '大規模言語モデルによる研究支援の新展開',
+    info: 'Arakawa Lab | IEEE 2026', pattern: 'glass', seed: '42',
+    source: 'gradient', query: '', font: 'noto-sans-jp', color: 'dark-blue',
   });
-
   const [usage, setUsage] = useState(0);
-  const [previewKey, setPreviewKey] = useState(0);
+  const [key, setKey] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [downloading, setDownloading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const date = getTodayDate();
-    const stored = localStorage.getItem(`ogp_usage_${date}`);
-    if (stored) setUsage(parseInt(stored));
+    const d = getTodayDate();
+    const s = localStorage.getItem(`ogp_usage_${d}`);
+    if (s) setUsage(parseInt(s));
   }, []);
 
-  const incrementUsage = () => {
-    const date = getTodayDate();
-    const newCount = usage + 1;
-    setUsage(newCount);
-    localStorage.setItem(`ogp_usage_${date}`, newCount.toString());
-  };
+  const tick = () => { const d = getTodayDate(); const n = usage + 1; setUsage(n); localStorage.setItem(`ogp_usage_${d}`, n.toString()); };
+  const limit = 30;
+  const over = usage >= limit;
 
-  const maxLimit = 30;
-  const isOverLimit = usage >= maxLimit;
+  const set = (patch: Partial<typeof form>) => setForm(p => ({ ...p, ...patch }));
+  const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => set({ [e.target.name]: e.target.value });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  const regen = () => { if (over) return; setLoading(true); set({ seed: String(Math.random() * 1e4 | 0) }); tick(); setKey(k => k + 1); };
 
-  const generatePreview = () => {
-    if (isOverLimit) {
-      alert(`本日の利用上限（${maxLimit}回/日）に達しました。`);
-      return;
-    }
-    setLoading(true);
-    setFormData(prev => ({ ...prev, seed: Math.floor(Math.random() * 10000).toString() }));
-    incrementUsage();
-    setPreviewKey(prev => prev + 1);
-  };
+  const ogUrl = `/api/og?title=${encodeURIComponent(form.title)}&type=${encodeURIComponent(form.type)}&info=${encodeURIComponent(form.info)}&pattern=${form.pattern}&seed=${form.seed}&source=${form.source}&query=${encodeURIComponent(form.query || form.title)}&font=${form.font}&color=${form.color}`;
 
-  const ogUrl = `/api/og?title=${encodeURIComponent(formData.title)}&type=${encodeURIComponent(formData.type)}&info=${encodeURIComponent(formData.info)}&pattern=${formData.pattern}&seed=${formData.seed}&source=${formData.source}&query=${encodeURIComponent(formData.query || formData.title)}&font=${formData.font}&color=${formData.color}`;
-
-  const downloadImage = useCallback(async () => {
-    setDownloading(true);
+  const download = useCallback(async () => {
+    setSaving(true);
     try {
-      const res = await fetch(ogUrl);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const safeName = formData.title.replace(/[^\w\u3000-\u9fff\uff00-\uffef-]/g, '_').substring(0, 40);
-      a.download = `ogp_${safeName}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      alert('ダウンロードに失敗しました。');
-    } finally {
-      setDownloading(false);
-    }
-  }, [ogUrl, formData.title]);
+      const r = await fetch(ogUrl); const b = await r.blob();
+      const u = URL.createObjectURL(b); const a = document.createElement('a');
+      a.href = u; a.download = `ogp_${form.title.replace(/[^\w\u3000-\u9fff-]/g, '_').substring(0, 30)}.png`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(u);
+    } catch { alert('ダウンロードに失敗しました。'); } finally { setSaving(false); }
+  }, [ogUrl, form.title]);
+
+  const darkPresets = COLOR_PRESETS.filter(c => !c.light);
+  const lightPresets = COLOR_PRESETS.filter(c => c.light);
 
   return (
-    <div className="app-container">
-      <header className="app-header">
-        <h1>OGP Maker</h1>
-        <p>AI背景 × テキストオーバーレイで、プロフェッショナルな画像を生成</p>
+    <div className="app-shell">
+      {/* ===== App Bar ===== */}
+      <header className="app-bar">
+        <div className="logo"><span>OGP</span> Maker</div>
+        <div className="tagline">AI背景 × テキストオーバーレイで、高品質な画像を生成</div>
       </header>
 
-      {/* トップパネル: コンテンツ内容を横並びで集中管理 */}
-      <section className="input-panel">
-        <div className="field-group">
-          <div className="field-label">表示ヘッダ <span className="hint">例: 採択, 受賞</span></div>
-          <input name="type" className="panel-input" value={formData.type} onChange={handleChange} />
+      {/* ===== Input Bar ===== */}
+      <section className="input-bar">
+        <div className="field">
+          <label className="field-label">ヘッダ<span className="field-hint">採択 / 受賞 / 発表</span></label>
+          <input name="type" className="input" value={form.type} onChange={onChange} />
         </div>
-        <div className="field-group">
-          <div className="field-label">メインタイトル</div>
-          <textarea name="title" className="panel-textarea" rows={2} value={formData.title} onChange={handleChange} />
+        <div className="field">
+          <label className="field-label">タイトル</label>
+          <textarea name="title" className="textarea" rows={2} value={form.title} onChange={onChange} />
         </div>
-        <div className="field-group">
-          <div className="field-label">補足・クレジット</div>
-          <textarea name="info" className="panel-textarea" rows={2} value={formData.info} onChange={handleChange} />
+        <div className="field">
+          <label className="field-label">補足情報</label>
+          <textarea name="info" className="textarea" rows={2} value={form.info} onChange={onChange} />
         </div>
       </section>
 
+      {/* ===== Workspace ===== */}
       <div className="workspace">
-        {/* サイドバー: スタイル・フォント設定 (独立スクロール) */}
-        <aside className="sidebar">
-          <div className="sidebar-group">
-            <h3 className="section-label">🖋 書体選択</h3>
-            <select name="font" className="dark-select" value={formData.font} onChange={handleChange} style={{ width: '100%', padding: '12px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-subtle)', color: 'white', borderRadius: '8px' }}>
-              {FONTS.map(f => (
-                <option key={f.id} value={f.id} style={{ fontFamily: f.family }}>
-                  {f.name} — {f.type}
-                </option>
-              ))}
+        {/* Properties Panel */}
+        <aside className="props-panel">
+          <div>
+            <div className="prop-section-title">書体</div>
+            <select name="font" className="select" value={form.font} onChange={onChange}>
+              {FONTS.map(f => <option key={f.id} value={f.id}>{f.name} — {f.desc}</option>)}
             </select>
           </div>
 
-          <div className="sidebar-group">
-            <h3 className="section-label">🖼 背景スタイル</h3>
-            {/* プレミアム・タブデザインの復活 */}
-            <div className="premium-tabs">
-              {BG_SOURCES.map(s => (
-                <div 
-                  key={s.id} 
-                  className={`premium-tab ${formData.source === s.id ? 'active' : ''}`}
-                  onClick={() => setFormData(prev => ({ ...prev, source: s.id }))}
-                >
-                  <span style={{ fontSize: '1.1rem' }}>{s.icon}</span> {s.label.split(' ')[1]}
-                </div>
+          <div>
+            <div className="prop-section-title">背景</div>
+            <div className="tab-group">
+              {BG_TABS.map(t => (
+                <div key={t.id} className={`tab-item ${form.source === t.id ? 'active' : ''}`} onClick={() => set({ source: t.id })}>{t.label}</div>
               ))}
             </div>
 
-            {formData.source === 'gradient' ? (
-              <div className="palette-card-grid animate-fade-in">
-                {COLOR_PRESETS.map(c => (
-                  <div 
-                    key={c.id} 
-                    className={`palette-card ${formData.color === c.id ? 'active' : ''}`}
-                    style={{ 
-                      background: `linear-gradient(135deg, ${c.colors[0]}, ${c.colors[1]})`,
-                      color: c.isLight ? '#000' : '#fff'
-                    }}
-                    onClick={() => setFormData(prev => ({ ...prev, color: c.id }))}
-                  >
-                    {c.name}
-                  </div>
-                ))}
+            {form.source === 'gradient' ? (
+              <div>
+                <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-tertiary)', marginBottom: 8 }}>Dark</div>
+                <div className="color-grid" style={{ marginBottom: 12 }}>
+                  {darkPresets.map(c => (
+                    <div key={c.id} className={`color-swatch ${form.color === c.id ? 'active' : ''}`}
+                      style={{ background: `linear-gradient(135deg, ${c.colors[0]}, ${c.colors[1]})`, color: '#fff' }}
+                      onClick={() => set({ color: c.id })}>{c.label}</div>
+                  ))}
+                </div>
+                <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-tertiary)', marginBottom: 8 }}>Light</div>
+                <div className="color-grid">
+                  {lightPresets.map(c => (
+                    <div key={c.id} className={`color-swatch ${form.color === c.id ? 'active' : ''}`}
+                      style={{ background: `linear-gradient(135deg, ${c.colors[0]}, ${c.colors[1]})`, color: '#374151' }}
+                      onClick={() => set({ color: c.id })}>{c.label}</div>
+                  ))}
+                </div>
               </div>
             ) : (
-              <div className="animate-fade-in">
-                <input 
-                  name="query" 
-                  className="panel-input" 
-                  placeholder={formData.source === 'pollinations' ? 'AI指示（例: nebula, city）' : 'キーワード検索'} 
-                  value={formData.query} 
-                  onChange={handleChange} 
-                  style={{ width: '100%', marginBottom: '12px' }}
-                />
-                <button className="btn-premium" style={{ width: '100%', padding: '12px', fontSize: '0.9rem' }} onClick={generatePreview} disabled={isOverLimit}>
-                  🔄 背景を生成する
-                </button>
+              <div>
+                <input name="query" className="input" style={{ width: '100%' }}
+                  placeholder={form.source === 'pollinations' ? 'プロンプト（例: nebula）' : 'キーワード'}
+                  value={form.query} onChange={onChange} />
+                <button className="btn-generate" onClick={regen} disabled={over}>背景を再生成</button>
               </div>
             )}
           </div>
 
-          <div style={{ marginTop: 'auto', textAlign: 'center', fontSize: '0.7rem', color: 'var(--text-muted)', paddingTop: '20px' }}>
-             本日利用: {usage} / {maxLimit} 回分
-          </div>
+          <div className="usage-counter">{usage} / {limit} 回</div>
         </aside>
 
-        {/* メイン: 制作ダッシュボード */}
-        <main className="main-dashboard">
-          <section className="pattern-bar">
+        {/* Canvas Panel */}
+        <main className="canvas-panel">
+          <div className="pattern-selector">
+            <span className="pattern-selector-label">レイアウトパターン</span>
             {PATTERNS.map(p => (
-              <div 
-                key={p.id} 
-                className={`pattern-card ${formData.pattern === p.id ? 'active' : ''}`}
-                onClick={() => setFormData(prev => ({ ...prev, pattern: p.id }))}
-              >
-                <div className="pattern-thumb-box">
-                  <img src={p.img} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </div>
-                <div style={{ fontSize: '0.72rem', color: formData.pattern === p.id ? 'var(--accent-primary)' : 'var(--text-muted)' }}>
-                  {p.name}
-                </div>
+              <div key={p.id} className={`pattern-option ${form.pattern === p.id ? 'active' : ''}`} onClick={() => set({ pattern: p.id })}>
+                <div className="pattern-option-thumb"><img src={p.img} alt={p.name} /></div>
+                <span className="pattern-option-name">{p.name}</span>
               </div>
             ))}
-          </section>
+          </div>
 
-          <section className="canvas-center">
-            <div className="og-vignette">
-              {loading && (
-                <div className="loading-shade">
-                  <div className="spin"></div>
-                </div>
-              )}
-              <img src={ogUrl} alt="Preview" className="og-img" style={{ display: 'block', width: '100%', height: '100%', objectFit: 'contain' }} key={previewKey} onLoad={() => setLoading(false)} onError={() => setLoading(false)} />
-              <div style={{ position: 'absolute', bottom: '-24px', right: '0', fontSize: '0.7rem', color: 'var(--text-muted)' }}>1200 × 630</div>
+          <div className="canvas-viewport">
+            <div className="canvas-frame">
+              {loading && <div className="loading-overlay"><div className="spinner" /></div>}
+              <img src={ogUrl} alt="Preview" key={key} onLoad={() => setLoading(false)} onError={() => setLoading(false)} />
+              <div className="canvas-meta">1200 × 630</div>
             </div>
-          </section>
+          </div>
 
-          <footer className="action-bar">
-            <button className="btn-og-primary" onClick={downloadImage} disabled={downloading}>
-              <Download size={22} />
-              {downloading ? '生成中...' : 'PNGをダウンロード'}
+          <footer className="action-footer">
+            <button className="btn-primary" onClick={download} disabled={saving}>
+              <Download size={18} />{saving ? '保存中…' : 'PNGをダウンロード'}
             </button>
           </footer>
         </main>
