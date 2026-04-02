@@ -187,35 +187,50 @@ export async function GET(req: NextRequest) {
   if (source === 'pollinations' || source === 'unsplash') {
     try {
       let bgUrl = '';
+      let headers: Record<string, string> = {};
+
       if (source === 'unsplash') {
         // Unsplash official API (requires Access Key set in env)
         const unsplashKey = process.env.UNSPLASH_ACCESS_KEY;
         if (unsplashKey) {
           const searchUrl = `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query || title)}&orientation=landscape&w=1200&client_id=${unsplashKey}`;
-          const apiRes = await fetch(searchUrl);
+          const apiRes = await fetch(searchUrl, {
+            headers: { 'Accept-Version': 'v1' }
+          });
           if (apiRes.ok) {
             const data = await apiRes.json();
             bgUrl = data.urls?.regular || '';
+          } else {
+            console.warn(`[OG-API] Unsplash API search failed: ${apiRes.status}`);
           }
         }
       } else {
-        // Pollinations API
+        // Pollinations API (Latest endpoint)
         const pollinationsKey = process.env.POLLINATIONS_API_KEY;
         const prompt = encodeURIComponent(
           `abstract background: ${query || title}, minimalist, no text, digital art`
         );
-        bgUrl = `https://image.pollinations.ai/prompt/${prompt}?width=1200&height=630&nologo=true&seed=${seed}`;
+        bgUrl = `https://gen.pollinations.ai/image/${prompt}?width=1200&height=630&nologo=true&seed=${seed}&model=flux`;
         if (pollinationsKey) {
-          bgUrl += `&token=${pollinationsKey}`;
+          headers['Authorization'] = `Bearer ${pollinationsKey}`;
         }
       }
+
       if (bgUrl) {
-        const bgRes = await fetch(bgUrl, { redirect: 'follow' });
+        console.log(`[OG-API] Fetching from ${source}: ${bgUrl}`);
+        const bgRes = await fetch(bgUrl, { 
+          redirect: 'follow',
+          headers: headers
+        });
         const contentType = bgRes.headers.get('content-type') || '';
+        console.log(`[OG-API] Result: status=${bgRes.status}, type=${contentType}`);
+        
         if (bgRes.ok && contentType.startsWith('image/')) {
           const buf = await bgRes.arrayBuffer();
           const ext = contentType.includes('jpeg') || contentType.includes('jpg') ? 'jpeg' : 'png';
           bgSrc = `data:image/${ext};base64,${Buffer.from(buf).toString('base64')}`;
+        } else {
+          console.warn(`[OG-API] Image fetch failed or not an image: ${bgRes.status}`);
         }
       }
     } catch {
