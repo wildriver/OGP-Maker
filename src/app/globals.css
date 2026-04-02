@@ -98,13 +98,13 @@ body {
   width: 280px;
   min-width: 280px;
   border-right: 1px solid var(--border);
-  padding: 20px;
+  padding: 32px 24px;
   display: flex;
   flex-direction: column;
+  justify-content: center; /* サイドバーの内容も中央に寄せてバランスを取る */
   gap: 24px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.08) transparent;
 }
 
 .props-panel::-webkit-scrollbar { width: 3px; }
@@ -140,12 +140,21 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* 要素全体を上下中央に */
-  align-items: center;    /* 要素全体を左右中央に */
+  align-items: center;
   min-width: 0;
-  overflow-y: auto;       /* はみ出した場合はスクロール可能に */
-  gap: 32px;              /* 3つのブロックの間隔を一定に保つ */
+  overflow-y: auto;
   padding: 40px;
+  position: relative;
+}
+
+.studio-main-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  margin: auto 0; /* これにより垂直中央に固まる */
+  width: 100%;
+  max-width: 1000px;
 }
 
 .pattern-selector {

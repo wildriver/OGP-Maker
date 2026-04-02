@@ -156,30 +156,32 @@ export default function Home() {
 
         {/* Canvas Panel: Centered Grouped Block */}
         <main className="canvas-panel">
-          <div className="pattern-selector">
-            <span className="prop-section-title" style={{ marginBottom: 0 }}>レイアウトパターン</span>
-            <div className="pattern-options-row">
-              {PATTERNS.map(p => (
-                <div key={p.id} className={`pattern-option ${form.pattern === p.id ? 'active' : ''}`} onClick={() => set({ pattern: p.id })}>
-                  <div className="pattern-option-thumb"><img src={p.img} alt={p.name} /></div>
-                  <span className="pattern-option-name">{p.name}</span>
-                </div>
-              ))}
+          <div className="studio-main-group">
+            <div className="pattern-selector">
+              <span className="prop-section-title" style={{ marginBottom: 0 }}>レイアウトパターン</span>
+              <div className="pattern-options-row">
+                {PATTERNS.map(p => (
+                  <div key={p.id} className={`pattern-option ${form.pattern === p.id ? 'active' : ''}`} onClick={() => set({ pattern: p.id })}>
+                    <div className="pattern-option-thumb"><img src={p.img} alt={p.name} /></div>
+                    <span className="pattern-option-name">{p.name}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <div className="canvas-viewport">
-            <div className="canvas-frame">
-              {loading && <div className="loading-overlay"><div className="spinner" /></div>}
-              <img src={ogUrl} alt="Preview" key={key} onLoad={() => setLoading(false)} onError={() => setLoading(false)} />
+            <div className="canvas-viewport">
+              <div className="canvas-frame">
+                {loading && <div className="loading-overlay"><div className="spinner" /></div>}
+                <img src={ogUrl} alt="Preview" key={key} onLoad={() => setLoading(false)} onError={() => setLoading(false)} />
+              </div>
             </div>
-          </div>
 
-          <footer className="action-footer">
-            <button className="btn-primary" onClick={download} disabled={saving}>
-              <Download size={18} />{saving ? '保存中…' : 'PNGをダウンロード'}
-            </button>
-          </footer>
+            <footer className="action-footer">
+              <button className="btn-primary" onClick={download} disabled={saving}>
+                <Download size={18} />{saving ? '保存中…' : 'PNGをダウンロード'}
+              </button>
+            </footer>
+          </div>
         </main>
       </div>
     </div>
