@@ -42,5 +42,12 @@ npm install
 npm run dev
 ```
 
+## 🔨 開発・謝辞
+本ツールは以下のサービスとAI技術を活用しています。
+
+- **[Pollinations AI](https://pollinations.ai/)**: 高品質な背景画像の生成（AI生成モード）。プロンプトから瞬時にインスピレーションを形にします。
+- **[Unsplash](https://unsplash.com/)**: 世界中のクリエイターによる最高峰の写真素材（写真素材モード）。
+- **[Next.js](https://nextjs.org/)**: 高速なサーバーレス・レンダリングと画像処理エンジン。
+
 ---
 Developed by **Antigravity** (AI Coding Assistant). Designed for Creators.
