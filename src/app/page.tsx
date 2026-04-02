@@ -158,7 +158,7 @@ export default function Home() {
         <main className="canvas-panel">
           <div className="studio-main-group">
             <div className="pattern-selector">
-              <span className="prop-section-title" style={{ border: 'none', padding: 0 }}>レイアウトパターン</span>
+              <span className="prop-section-title">レイアウトパターン</span>
               <div className="pattern-options-row">
                 {PATTERNS.map(p => (
                   <div key={p.id} className={`pattern-option ${form.pattern === p.id ? 'active' : ''}`} onClick={() => set({ pattern: p.id })}>
