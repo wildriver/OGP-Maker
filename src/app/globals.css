@@ -29,6 +29,7 @@ body {
   min-height: 100vh;
   display: flex;
   justify-content: center;
+  align-items: flex-start; /* 引き延ばしを防止 */
   overflow: auto;
   -webkit-font-smoothing: antialiased;
   padding: 40px 20px;
