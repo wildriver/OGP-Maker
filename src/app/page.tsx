@@ -31,9 +31,9 @@ const COLOR_PRESETS = [
 ];
 
 const BG_SOURCES = [
-  { id: 'gradient', label: '🎨 カラー' },
-  { id: 'pollinations', label: '✨ AI生成' },
-  { id: 'unsplash', label: '📷 写真' },
+  { id: 'gradient', label: '🎨 カラー', icon: '🎨' },
+  { id: 'pollinations', label: '✨ AI生成', icon: '✨' },
+  { id: 'unsplash', label: '📷 写真素材', icon: '📷' },
 ];
 
 const getTodayDate = () => new Date().toISOString().split('T')[0];
@@ -115,32 +115,31 @@ export default function Home() {
     <div className="app-container">
       <header className="app-header">
         <h1>OGP Maker</h1>
-        <p>AI背景 × テキストオーバーレイで、プロフェフェッショナルな画像を瞬時に生成</p>
+        <p>AI背景 × テキストオーバーレイで、プロフェッショナルな画像を生成</p>
       </header>
 
-      {/* トップ入力パネル: 長いテキストに対応 */}
+      {/* トップパネル: コンテンツ内容を横並びで集中管理 */}
       <section className="input-panel">
         <div className="field-group">
-          <div className="field-label">
-            コンテンツタイプ <span className="hint">例: 採択, 受賞, 発表</span>
-          </div>
+          <div className="field-label">表示ヘッダ <span className="hint">例: 採択, 受賞</span></div>
           <input name="type" className="panel-input" value={formData.type} onChange={handleChange} />
         </div>
         <div className="field-group">
-          <div className="field-label">タイトル</div>
+          <div className="field-label">メインタイトル</div>
           <textarea name="title" className="panel-textarea" rows={2} value={formData.title} onChange={handleChange} />
         </div>
         <div className="field-group">
-          <div className="field-label">補足情報</div>
+          <div className="field-label">補足・クレジット</div>
           <textarea name="info" className="panel-textarea" rows={2} value={formData.info} onChange={handleChange} />
         </div>
       </section>
 
       <div className="workspace">
+        {/* サイドバー: スタイル・フォント設定 (独立スクロール) */}
         <aside className="sidebar">
           <div className="sidebar-group">
             <h3 className="section-label">🖋 書体選択</h3>
-            <select name="font" className="dark-select" value={formData.font} onChange={handleChange}>
+            <select name="font" className="dark-select" value={formData.font} onChange={handleChange} style={{ width: '100%', padding: '12px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-subtle)', color: 'white', borderRadius: '8px' }}>
               {FONTS.map(f => (
                 <option key={f.id} value={f.id} style={{ fontFamily: f.family }}>
                   {f.name} — {f.type}
@@ -150,32 +149,33 @@ export default function Home() {
           </div>
 
           <div className="sidebar-group">
-            <h3 className="section-label">🎨 スタイル・背景</h3>
-            <div className="dark-tabs">
+            <h3 className="section-label">🖼 背景スタイル</h3>
+            {/* プレミアム・タブデザインの復活 */}
+            <div className="premium-tabs">
               {BG_SOURCES.map(s => (
                 <div 
                   key={s.id} 
-                  className={`dark-tab ${formData.source === s.id ? 'active' : ''}`}
+                  className={`premium-tab ${formData.source === s.id ? 'active' : ''}`}
                   onClick={() => setFormData(prev => ({ ...prev, source: s.id }))}
                 >
-                  {s.label.split(' ')[1]}
+                  <span style={{ fontSize: '1.1rem' }}>{s.icon}</span> {s.label.split(' ')[1]}
                 </div>
               ))}
             </div>
 
             {formData.source === 'gradient' ? (
-              <div className="compact-palette animate-fade-in">
+              <div className="palette-card-grid animate-fade-in">
                 {COLOR_PRESETS.map(c => (
                   <div 
                     key={c.id} 
-                    className={`palette-thumb ${formData.color === c.id ? 'active' : ''}`}
+                    className={`palette-card ${formData.color === c.id ? 'active' : ''}`}
                     style={{ 
                       background: `linear-gradient(135deg, ${c.colors[0]}, ${c.colors[1]})`,
                       color: c.isLight ? '#000' : '#fff'
                     }}
                     onClick={() => setFormData(prev => ({ ...prev, color: c.id }))}
                   >
-                    {c.name.split('・')[1]}
+                    {c.name}
                   </div>
                 ))}
               </div>
@@ -184,59 +184,59 @@ export default function Home() {
                 <input 
                   name="query" 
                   className="panel-input" 
-                  placeholder={formData.source === 'pollinations' ? 'AI指示' : 'キーワード検索'} 
+                  placeholder={formData.source === 'pollinations' ? 'AI指示（例: nebula, city）' : 'キーワード検索'} 
                   value={formData.query} 
                   onChange={handleChange} 
                   style={{ width: '100%', marginBottom: '12px' }}
                 />
-                <button className="btn-secondary" onClick={generatePreview} disabled={isOverLimit}>
-                  🔄 背景を再構成する
+                <button className="btn-premium" style={{ width: '100%', padding: '12px', fontSize: '0.9rem' }} onClick={generatePreview} disabled={isOverLimit}>
+                  🔄 背景を生成する
                 </button>
               </div>
             )}
           </div>
 
-          <div style={{ marginTop: 'auto', textAlign: 'center', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-             本日利用: {usage} / {maxLimit} 回 <br />
-             残り {maxLimit - usage} 回
+          <div style={{ marginTop: 'auto', textAlign: 'center', fontSize: '0.7rem', color: 'var(--text-muted)', paddingTop: '20px' }}>
+             本日利用: {usage} / {maxLimit} 回分
           </div>
         </aside>
 
+        {/* メイン: 制作ダッシュボード */}
         <main className="main-dashboard">
-          <section className="pattern-row">
-            <h3 className="section-label">🧩 レイアウト</h3>
-            <div style={{ display: 'flex' }}>
-              {PATTERNS.map(p => (
-                <div 
-                  key={p.id} 
-                  className={`pattern-item ${formData.pattern === p.id ? 'active' : ''}`}
-                  onClick={() => setFormData(prev => ({ ...prev, pattern: p.id }))}
-                >
-                   <div className="pattern-img"><img src={p.img} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>
-                   <div style={{ fontSize: '0.7rem', textAlign: 'center', color: formData.pattern === p.id ? 'var(--accent-primary)' : 'var(--text-muted)' }}>
-                    {p.name}
-                   </div>
+          <section className="pattern-bar">
+            {PATTERNS.map(p => (
+              <div 
+                key={p.id} 
+                className={`pattern-card ${formData.pattern === p.id ? 'active' : ''}`}
+                onClick={() => setFormData(prev => ({ ...prev, pattern: p.id }))}
+              >
+                <div className="pattern-thumb-box">
+                  <img src={p.img} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
-              ))}
+                <div style={{ fontSize: '0.72rem', color: formData.pattern === p.id ? 'var(--accent-primary)' : 'var(--text-muted)' }}>
+                  {p.name}
+                </div>
+              </div>
+            ))}
+          </section>
+
+          <section className="canvas-center">
+            <div className="og-vignette">
+              {loading && (
+                <div className="loading-shade">
+                  <div className="spin"></div>
+                </div>
+              )}
+              <img src={ogUrl} alt="Preview" className="og-img" style={{ display: 'block', width: '100%', height: '100%', objectFit: 'contain' }} key={previewKey} onLoad={() => setLoading(false)} onError={() => setLoading(false)} />
+              <div style={{ position: 'absolute', bottom: '-24px', right: '0', fontSize: '0.7rem', color: 'var(--text-muted)' }}>1200 × 630</div>
             </div>
           </section>
 
-          <section className="canvas-area">
-             <div className="og-shadow-box">
-                {loading && (
-                  <div className="loading-shade">
-                    <div className="spin"></div>
-                  </div>
-                )}
-                <img src={ogUrl} alt="Preview" className="og-img" key={previewKey} onLoad={() => setLoading(false)} onError={() => setLoading(false)} />
-             </div>
-          </section>
-
-          <footer className="action-footer">
-             <button className="btn-premium" onClick={downloadImage} disabled={downloading}>
-               <Download size={22} />
-                {downloading ? '保存中...' : 'PNGをダウンロード'}
-             </button>
+          <footer className="action-bar">
+            <button className="btn-og-primary" onClick={downloadImage} disabled={downloading}>
+              <Download size={22} />
+              {downloading ? '生成中...' : 'PNGをダウンロード'}
+            </button>
           </footer>
         </main>
       </div>
