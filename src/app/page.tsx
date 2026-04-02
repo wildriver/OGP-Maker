@@ -11,10 +11,27 @@ const PATTERNS = [
 ];
 
 const FONTS = [
-  { id: 'noto-sans-jp', name: 'Noto Sans JP', desc: 'ゴシック体（デフォルト）' },
+  { id: 'noto-sans-jp', name: 'Noto Sans JP', desc: 'ゴシック体' },
   { id: 'noto-serif-jp', name: 'Noto Serif JP', desc: '明朝体' },
   { id: 'm-plus-rounded', name: 'M PLUS Rounded', desc: '丸ゴシック体' },
   { id: 'inter', name: 'Inter', desc: '英語向けサンセリフ' },
+];
+
+const COLOR_PRESETS = [
+  { id: 'dark-blue', name: 'ダーク・ブルー', colors: ['#0f0c29', '#302b63'], light: false },
+  { id: 'dark-green', name: 'ダーク・グリーン', colors: ['#0a1a0f', '#1a3a2a'], light: false },
+  { id: 'dark-purple', name: 'ダーク・パープル', colors: ['#1a0a2e', '#2d1b69'], light: false },
+  { id: 'dark-warm', name: 'ダーク・ウォーム', colors: ['#1a0a00', '#2d1500'], light: false },
+  { id: 'light-blue', name: 'ライト・ブルー', colors: ['#e0f2fe', '#bae6fd'], light: true },
+  { id: 'light-green', name: 'ライト・グリーン', colors: ['#ecfdf5', '#d1fae5'], light: true },
+  { id: 'light-warm', name: 'ライト・ウォーム', colors: ['#fff7ed', '#fed7aa'], light: true },
+  { id: 'light-purple', name: 'ライト・パープル', colors: ['#f5f3ff', '#ede9fe'], light: true },
+];
+
+const BG_SOURCES = [
+  { id: 'gradient', label: '🎨 カラー' },
+  { id: 'pollinations', label: '✨ AI生成' },
+  { id: 'unsplash', label: '📷 写真素材' },
 ];
 
 const getTodayDate = () => new Date().toISOString().split('T')[0];
@@ -26,9 +43,10 @@ export default function Home() {
     info: 'Arakawa Lab | IEEE 2026',
     pattern: 'glass',
     seed: '42',
-    source: 'pollinations',
+    source: 'gradient',
     query: '',
     font: 'noto-sans-jp',
+    color: 'dark-blue',
   });
 
   const [usage, setUsage] = useState(0);
@@ -49,7 +67,7 @@ export default function Home() {
     localStorage.setItem(`ogp_usage_${date}`, newCount.toString());
   };
 
-  const maxLimit = 10;
+  const maxLimit = 30;
   const isOverLimit = usage >= maxLimit;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -66,10 +84,9 @@ export default function Home() {
     setFormData(prev => ({ ...prev, seed: Math.floor(Math.random() * 10000).toString() }));
     incrementUsage();
     setPreviewKey(prev => prev + 1);
-    // Loading will be cleared when image loads
   };
 
-  const ogUrl = `/api/og?title=${encodeURIComponent(formData.title)}&type=${encodeURIComponent(formData.type)}&info=${encodeURIComponent(formData.info)}&pattern=${formData.pattern}&seed=${formData.seed}&source=${formData.source}&query=${encodeURIComponent(formData.query || formData.title)}&font=${formData.font}`;
+  const ogUrl = `/api/og?title=${encodeURIComponent(formData.title)}&type=${encodeURIComponent(formData.type)}&info=${encodeURIComponent(formData.info)}&pattern=${formData.pattern}&seed=${formData.seed}&source=${formData.source}&query=${encodeURIComponent(formData.query || formData.title)}&font=${formData.font}&color=${formData.color}`;
 
   const copyUrl = () => {
     const fullUrl = window.location.origin + ogUrl;
@@ -109,24 +126,48 @@ export default function Home() {
 
           {/* Background Source */}
           <div className="form-group">
-            <label className="label">背景画像</label>
-            <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
-              <label className="radio-label">
-                <input type="radio" name="source" value="pollinations" checked={formData.source === 'pollinations'} onChange={handleChange} />
-                <span>🎨 AI生成（Pollinations）</span>
-              </label>
-              <label className="radio-label">
-                <input type="radio" name="source" value="unsplash" checked={formData.source === 'unsplash'} onChange={handleChange} />
-                <span>📷 写真素材（Unsplash）</span>
-              </label>
+            <label className="label">背景</label>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+              {BG_SOURCES.map((s) => (
+                <label key={s.id} className={`source-chip ${formData.source === s.id ? 'active' : ''}`}>
+                  <input type="radio" name="source" value={s.id} checked={formData.source === s.id} onChange={handleChange} style={{ display: 'none' }} />
+                  {s.label}
+                </label>
+              ))}
             </div>
-            <input
-              name="query"
-              className="input"
-              placeholder={formData.source === 'pollinations' ? '背景のプロンプト（空欄ならタイトルを使用）' : '検索キーワード（例: nature, technology）'}
-              value={formData.query}
-              onChange={handleChange}
-            />
+
+            {/* Color Presets (shown when gradient mode) */}
+            {formData.source === 'gradient' && (
+              <div className="color-grid">
+                {COLOR_PRESETS.map((c) => (
+                  <label key={c.id} className="color-option" title={c.name}>
+                    <input type="radio" name="color" value={c.id} checked={formData.color === c.id} onChange={handleChange} style={{ display: 'none' }} />
+                    <div
+                      className={`color-swatch ${formData.color === c.id ? 'active' : ''}`}
+                      style={{ background: `linear-gradient(135deg, ${c.colors[0]}, ${c.colors[1]})` }}
+                    >
+                      <span className="color-swatch-label">{c.name}</span>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            )}
+
+            {/* Query for AI/Unsplash */}
+            {formData.source !== 'gradient' && (
+              <>
+                <input
+                  name="query"
+                  className="input"
+                  placeholder={formData.source === 'pollinations' ? '背景のプロンプト（空欄ならタイトルを使用）' : '検索キーワード（例: nature, technology）'}
+                  value={formData.query}
+                  onChange={handleChange}
+                />
+                <p className="hint">
+                  ⚠ 外部サービスが一時的に利用できない場合、カラー背景にフォールバックします
+                </p>
+              </>
+            )}
           </div>
 
           {/* Font */}

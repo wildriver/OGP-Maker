@@ -3,12 +3,125 @@ import { NextRequest } from 'next/server';
 
 export const runtime = 'edge';
 
-// Verified direct TTF URLs from Google Fonts CDN (fetched via CSS API with browser UA)
+// Verified direct TTF URLs from Google Fonts CDN
 const FONT_URLS: Record<string, string> = {
   'noto-sans-jp': 'https://fonts.gstatic.com/s/notosansjp/v56/-F6jfjtqLzI2JPCgQBnw7HFyzSD-AsregP8VFPYk75s.ttf',
   'noto-serif-jp': 'https://fonts.gstatic.com/s/notoserifjp/v33/xn71YHs72GKoTvER4Gn3b5eMRtWGkp6o7MjQ2bzWPebA.ttf',
   'm-plus-rounded': 'https://fonts.gstatic.com/s/mplusrounded1c/v20/VdGBAYIAV6gnpUpoWwNkYvrugw9RuM064ZsK.ttf',
   'inter': 'https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYMZg.ttf',
+};
+
+// Color themes: [bg gradient, accent, text primary, text secondary, type badge bg]
+type ColorTheme = {
+  bg: string;
+  accent: string;
+  textPrimary: string;
+  textSecondary: string;
+  badgeBg: string;
+  badgeText: string;
+  glassBg: string;
+  glassBorder: string;
+  neonGlow: string;
+  neonAccent: string;
+};
+
+const COLOR_THEMES: Record<string, ColorTheme> = {
+  'dark-blue': {
+    bg: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
+    accent: '#ff3366',
+    textPrimary: '#ffffff',
+    textSecondary: 'rgba(255,255,255,0.7)',
+    badgeBg: 'rgba(255,255,255,0.1)',
+    badgeText: '#ff3366',
+    glassBg: 'rgba(0,0,0,0.4)',
+    glassBorder: 'rgba(255,255,255,0.15)',
+    neonGlow: '0 0 20px #00d2ff, 0 0 40px #00d2ff',
+    neonAccent: '#ff00ff',
+  },
+  'dark-green': {
+    bg: 'linear-gradient(135deg, #0a1a0f, #1a3a2a, #0d2818)',
+    accent: '#4ade80',
+    textPrimary: '#ffffff',
+    textSecondary: 'rgba(255,255,255,0.7)',
+    badgeBg: 'rgba(74,222,128,0.15)',
+    badgeText: '#4ade80',
+    glassBg: 'rgba(0,0,0,0.35)',
+    glassBorder: 'rgba(74,222,128,0.2)',
+    neonGlow: '0 0 20px #4ade80, 0 0 40px #4ade80',
+    neonAccent: '#22d3ee',
+  },
+  'dark-purple': {
+    bg: 'linear-gradient(135deg, #1a0a2e, #2d1b69, #1a0a2e)',
+    accent: '#a78bfa',
+    textPrimary: '#ffffff',
+    textSecondary: 'rgba(255,255,255,0.7)',
+    badgeBg: 'rgba(167,139,250,0.15)',
+    badgeText: '#c4b5fd',
+    glassBg: 'rgba(0,0,0,0.35)',
+    glassBorder: 'rgba(167,139,250,0.2)',
+    neonGlow: '0 0 20px #a78bfa, 0 0 40px #a78bfa',
+    neonAccent: '#f472b6',
+  },
+  'dark-warm': {
+    bg: 'linear-gradient(135deg, #1a0a00, #2d1500, #1a0800)',
+    accent: '#fb923c',
+    textPrimary: '#ffffff',
+    textSecondary: 'rgba(255,255,255,0.7)',
+    badgeBg: 'rgba(251,146,60,0.15)',
+    badgeText: '#fb923c',
+    glassBg: 'rgba(0,0,0,0.35)',
+    glassBorder: 'rgba(251,146,60,0.2)',
+    neonGlow: '0 0 20px #fb923c, 0 0 40px #fb923c',
+    neonAccent: '#f43f5e',
+  },
+  'light-blue': {
+    bg: 'linear-gradient(135deg, #e0f2fe, #bae6fd, #dbeafe)',
+    accent: '#2563eb',
+    textPrimary: '#1e293b',
+    textSecondary: 'rgba(30,41,59,0.65)',
+    badgeBg: 'rgba(37,99,235,0.1)',
+    badgeText: '#2563eb',
+    glassBg: 'rgba(255,255,255,0.6)',
+    glassBorder: 'rgba(37,99,235,0.15)',
+    neonGlow: '0 0 12px rgba(37,99,235,0.4)',
+    neonAccent: '#7c3aed',
+  },
+  'light-green': {
+    bg: 'linear-gradient(135deg, #ecfdf5, #d1fae5, #f0fdf4)',
+    accent: '#059669',
+    textPrimary: '#1e293b',
+    textSecondary: 'rgba(30,41,59,0.65)',
+    badgeBg: 'rgba(5,150,105,0.1)',
+    badgeText: '#059669',
+    glassBg: 'rgba(255,255,255,0.6)',
+    glassBorder: 'rgba(5,150,105,0.15)',
+    neonGlow: '0 0 12px rgba(5,150,105,0.4)',
+    neonAccent: '#0891b2',
+  },
+  'light-warm': {
+    bg: 'linear-gradient(135deg, #fff7ed, #fed7aa, #fef3c7)',
+    accent: '#c2410c',
+    textPrimary: '#1e293b',
+    textSecondary: 'rgba(30,41,59,0.65)',
+    badgeBg: 'rgba(194,65,12,0.1)',
+    badgeText: '#c2410c',
+    glassBg: 'rgba(255,255,255,0.6)',
+    glassBorder: 'rgba(194,65,12,0.15)',
+    neonGlow: '0 0 12px rgba(194,65,12,0.4)',
+    neonAccent: '#b91c1c',
+  },
+  'light-purple': {
+    bg: 'linear-gradient(135deg, #f5f3ff, #ede9fe, #faf5ff)',
+    accent: '#7c3aed',
+    textPrimary: '#1e293b',
+    textSecondary: 'rgba(30,41,59,0.65)',
+    badgeBg: 'rgba(124,58,237,0.1)',
+    badgeText: '#7c3aed',
+    glassBg: 'rgba(255,255,255,0.6)',
+    glassBorder: 'rgba(124,58,237,0.15)',
+    neonGlow: '0 0 12px rgba(124,58,237,0.4)',
+    neonAccent: '#ec4899',
+  },
 };
 
 async function loadFont(fontKey: string): Promise<ArrayBuffer> {
@@ -25,63 +138,67 @@ export async function GET(req: NextRequest) {
   const info = searchParams.get('info') || '';
   const pattern = searchParams.get('pattern') || 'classic';
   const seed = searchParams.get('seed') || '42';
-  const source = searchParams.get('source') || 'pollinations';
-  const query = searchParams.get('query') || title;
+  const source = searchParams.get('source') || 'gradient';
+  const query = searchParams.get('query') || '';
   const fontKey = searchParams.get('font') || 'noto-sans-jp';
+  const colorKey = searchParams.get('color') || 'dark-blue';
 
   // Load the font
   const fontData = await loadFont(fontKey);
   const fontFamily = 'CustomFont';
 
-  // Background URL
-  let bgUrl = '';
-  if (source === 'unsplash') {
-    bgUrl = `https://images.unsplash.com/featured/?${encodeURIComponent(query)}&w=1200&h=630&fit=crop&sig=${seed}`;
-  } else {
-    const prompt = encodeURIComponent(
-      `high quality abstract background for: ${query}, minimalist, wide aspect ratio, no text, digital art`
-    );
-    bgUrl = `https://image.pollinations.ai/prompt/${prompt}?width=1200&height=630&nologo=true&seed=${seed}`;
-  }
+  const theme = COLOR_THEMES[colorKey] || COLOR_THEMES['dark-blue'];
+  const isDark = colorKey.startsWith('dark');
 
-  // Fetch background image as ArrayBuffer for Satori
-  let bgImageData: ArrayBuffer | null = null;
-  try {
-    const bgRes = await fetch(bgUrl);
-    if (bgRes.ok) {
-      bgImageData = await bgRes.arrayBuffer();
-    }
-  } catch {
-    // Background fetch failed, will use gradient fallback
-  }
-
-  // Convert to base64 if available
+  // Background: try external image if requested, fallback to gradient
   let bgSrc = '';
-  if (bgImageData) {
-    const base64 = Buffer.from(bgImageData).toString('base64');
-    bgSrc = `data:image/png;base64,${base64}`;
+  if (source === 'pollinations' || source === 'unsplash') {
+    try {
+      let bgUrl = '';
+      if (source === 'unsplash') {
+        bgUrl = `https://source.unsplash.com/1200x630/?${encodeURIComponent(query || title)}`;
+      } else {
+        const prompt = encodeURIComponent(
+          `abstract background: ${query || title}, minimalist, no text, digital art`
+        );
+        bgUrl = `https://image.pollinations.ai/prompt/${prompt}?width=1200&height=630&nologo=true&seed=${seed}`;
+      }
+      const bgRes = await fetch(bgUrl, { redirect: 'follow' });
+      const contentType = bgRes.headers.get('content-type') || '';
+      if (bgRes.ok && contentType.startsWith('image/')) {
+        const buf = await bgRes.arrayBuffer();
+        const ext = contentType.includes('jpeg') || contentType.includes('jpg') ? 'jpeg' : 'png';
+        bgSrc = `data:image/${ext};base64,${Buffer.from(buf).toString('base64')}`;
+      }
+    } catch {
+      // fallback to gradient
+    }
   }
 
   const isMinimal = pattern === 'minimal';
   const isNeon = pattern === 'neon';
   const isGlass = pattern === 'glass';
 
-  // Dynamic font sizes based on title length
-  let titleFontSize = 64;
-  if (title.length > 30) titleFontSize = 48;
-  if (title.length > 50) titleFontSize = 40;
-  if (title.length > 80) titleFontSize = 32;
-  if (isMinimal) titleFontSize = Math.min(titleFontSize + 8, 72);
+  // Dynamic font sizes: use full width (1200px) minus padding
+  let titleFontSize = 72;
+  if (title.length > 15) titleFontSize = 64;
+  if (title.length > 25) titleFontSize = 52;
+  if (title.length > 40) titleFontSize = 44;
+  if (title.length > 60) titleFontSize = 36;
+  if (title.length > 80) titleFontSize = 30;
 
-  // Overlay gradient
-  const overlayBg = isMinimal
-    ? 'rgba(0,0,0,0.65)'
-    : isNeon
-      ? 'rgba(0,0,10,0.75)'
-      : 'linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.75))';
+  // Glass pattern: a card in the center
+  // Other patterns: full-width layout
+  const useFullWidth = !isGlass;
+  const contentWidth = useFullWidth ? 1100 : 900;
+  const contentPadding = useFullWidth ? '60px 50px' : '40px 60px';
 
-  // Glass center box bg
-  const glassBg = isGlass ? 'rgba(0, 0, 0, 0.5)' : 'transparent';
+  // Accent colors for the overlay when image bg is present
+  const overlayBg = bgSrc
+    ? (isDark
+        ? 'linear-gradient(180deg, rgba(0,0,0,0.3), rgba(0,0,0,0.75))'
+        : 'linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0.8))')
+    : 'transparent';
 
   return new ImageResponse(
     (
@@ -93,13 +210,13 @@ export async function GET(req: NextRequest) {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#111',
+          background: theme.bg,
           position: 'relative',
           fontFamily: fontFamily,
         }}
       >
-        {/* Background Image */}
-        {bgSrc ? (
+        {/* Background Image (if available) */}
+        {bgSrc && (
           <img
             src={bgSrc}
             width={1200}
@@ -113,7 +230,10 @@ export async function GET(req: NextRequest) {
               objectFit: 'cover',
             }}
           />
-        ) : (
+        )}
+
+        {/* Overlay for readability on image bg */}
+        {bgSrc && (
           <div
             style={{
               position: 'absolute',
@@ -121,54 +241,68 @@ export async function GET(req: NextRequest) {
               left: 0,
               width: '100%',
               height: '100%',
-              background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)',
+              background: overlayBg,
             }}
           />
         )}
 
-        {/* Overlay */}
-        <div
-          style={{
+        {/* Decorative Elements for gradient mode */}
+        {!bgSrc && isDark && (
+          <div style={{
             position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            background: overlayBg,
-          }}
-        />
+            top: -100,
+            right: -100,
+            width: 400,
+            height: 400,
+            borderRadius: 9999,
+            background: `radial-gradient(circle, ${theme.accent}22, transparent 70%)`,
+            display: 'flex',
+          }} />
+        )}
+        {!bgSrc && isDark && (
+          <div style={{
+            position: 'absolute',
+            bottom: -80,
+            left: -80,
+            width: 300,
+            height: 300,
+            borderRadius: 9999,
+            background: `radial-gradient(circle, ${theme.accent}18, transparent 70%)`,
+            display: 'flex',
+          }} />
+        )}
 
-        {/* Center 630x630 Content Area */}
+        {/* Content Area */}
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: isMinimal ? 'flex-start' : 'center',
             justifyContent: 'center',
-            width: 630,
-            height: 550,
-            backgroundColor: glassBg,
-            borderRadius: isGlass ? 40 : 0,
-            padding: '50px 50px',
+            width: contentWidth,
+            height: isGlass ? 500 : 550,
+            backgroundColor: isGlass ? theme.glassBg : 'transparent',
+            borderRadius: isGlass ? 32 : 0,
+            padding: contentPadding,
             textAlign: isMinimal ? 'left' : 'center',
-            border: isGlass ? '1px solid rgba(255, 255, 255, 0.15)' : 'none',
+            border: isGlass ? `1px solid ${theme.glassBorder}` : 'none',
           }}
         >
           {/* Type Label */}
           {type && (
             <div
               style={{
-                fontSize: isMinimal ? 22 : 26,
+                fontSize: isMinimal ? 22 : 24,
                 fontWeight: 700,
-                color: isNeon ? '#ff00ff' : isMinimal ? '#00d2ff' : '#ff3366',
-                marginBottom: 20,
-                textTransform: 'uppercase',
-                letterSpacing: isMinimal ? 1 : 4,
+                color: isNeon ? theme.neonAccent : theme.badgeText,
+                marginBottom: 24,
+                letterSpacing: isMinimal ? 1 : 3,
                 display: 'flex',
                 alignItems: 'center',
-                padding: isMinimal ? '0' : '6px 20px',
+                padding: isMinimal ? '0' : '8px 24px',
                 borderRadius: 8,
-                backgroundColor: isMinimal ? 'transparent' : 'rgba(255,255,255,0.08)',
+                backgroundColor: isMinimal ? 'transparent' : theme.badgeBg,
+                textShadow: isNeon ? `${theme.neonGlow}` : 'none',
               }}
             >
               {type}
@@ -180,14 +314,17 @@ export async function GET(req: NextRequest) {
             style={{
               fontSize: titleFontSize,
               fontWeight: 900,
-              color: '#ffffff',
-              lineHeight: 1.2,
-              marginBottom: 30,
+              color: theme.textPrimary,
+              lineHeight: 1.25,
+              marginBottom: 28,
               display: 'flex',
               flexWrap: 'wrap',
               textShadow: isNeon
-                ? '0 0 20px #00d2ff, 0 0 40px #00d2ff'
-                : '0 4px 12px rgba(0,0,0,0.5)',
+                ? theme.neonGlow
+                : isDark
+                  ? '0 3px 10px rgba(0,0,0,0.4)'
+                  : 'none',
+              maxWidth: contentWidth - 100,
             }}
           >
             {title}
@@ -197,12 +334,12 @@ export async function GET(req: NextRequest) {
           {info && (
             <div
               style={{
-                fontSize: 26,
+                fontSize: 24,
                 fontWeight: 500,
-                color: 'rgba(255, 255, 255, 0.7)',
+                color: theme.textSecondary,
                 display: 'flex',
                 alignItems: 'center',
-                borderLeft: isMinimal ? '4px solid #00d2ff' : 'none',
+                borderLeft: isMinimal ? `4px solid ${theme.accent}` : 'none',
                 paddingLeft: isMinimal ? 16 : 0,
               }}
             >
@@ -210,6 +347,19 @@ export async function GET(req: NextRequest) {
             </div>
           )}
         </div>
+
+        {/* Bottom accent line for classic/minimal */}
+        {!isGlass && !isNeon && !bgSrc && (
+          <div style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            width: '100%',
+            height: 4,
+            background: `linear-gradient(90deg, ${theme.accent}, transparent)`,
+            display: 'flex',
+          }} />
+        )}
       </div>
     ),
     {
@@ -219,7 +369,7 @@ export async function GET(req: NextRequest) {
         {
           name: fontFamily,
           data: fontData,
-          style: 'normal',
+          style: 'normal' as const,
           weight: 400,
         },
       ],
