@@ -29,19 +29,22 @@ body {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  overflow: hidden;
+  overflow: auto;
   -webkit-font-smoothing: antialiased;
+  padding: 40px 20px;
 }
 
 .app-shell {
   width: 100%;
   max-width: 1200px;
-  height: 100vh;
+  height: auto;
   display: flex;
   flex-direction: column;
   background: var(--bg-surface);
-  border-left: 1px solid var(--border);
-  border-right: 1px solid var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+  overflow: hidden;
 }
 
 .app-bar {
@@ -80,7 +83,7 @@ body {
 .input, .textarea { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-primary); font-size: var(--font-base); padding: 10px 14px; }
 .input:focus, .textarea:focus { border-color: var(--accent); outline: none; }
 
-.workspace { display: flex; flex: 1; min-height: 0; }
+.workspace { display: flex; min-height: 0; }
 
 .props-panel {
   width: 280px;
