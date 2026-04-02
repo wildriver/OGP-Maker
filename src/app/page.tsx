@@ -6,10 +6,10 @@ import { Download } from 'lucide-react';
 const PATTERNS = [
   { id: 'glass', name: 'グラス', img: '/pattern-glass.png' },
   { id: 'classic', name: 'グラデーション', img: '/pattern-classic.png' },
-  { id: 'topbar', name: 'トップバー', img: '/pattern-neon.png' }, // 仮の画像を使用
-  { id: 'bottombar', name: 'ボトムバー', img: '/pattern-minimal.png' }, // 仮
-  { id: 'full', name: 'フル', img: '/pattern-classic.png' }, // 仮
-  { id: 'columns', name: '2カラム', img: '/pattern-glass.png' }, // 仮
+  { id: 'topbar', name: 'トップバー', img: '/pattern-neon.png' },
+  { id: 'bottombar', name: 'ボトムバー', img: '/pattern-minimal.png' },
+  { id: 'full', name: 'フルイメージ', img: '/pattern-classic.png' },
+  { id: 'columns', name: '2カラム', img: '/pattern-glass.png' },
 ];
 
 const FONTS = [
@@ -20,14 +20,14 @@ const FONTS = [
 ];
 
 const COLOR_PRESETS = [
-  { id: 'dark-blue', colors: ['#0f0c29', '#302b63'] },
-  { id: 'dark-green', colors: ['#0a1a0f', '#1a3a2a'] },
-  { id: 'dark-purple', colors: ['#1a0a2e', '#2d1b69'] },
-  { id: 'dark-warm', colors: ['#1a0a00', '#2d1500'] },
-  { id: 'light-blue', colors: ['#e0f2fe', '#bae6fd'] },
-  { id: 'light-green', colors: ['#ecfdf5', '#d1fae5'] },
-  { id: 'light-warm', colors: ['#fff7ed', '#fed7aa'] },
-  { id: 'light-purple', colors: ['#f5f3ff', '#ede9fe'] },
+  { id: 'dark-blue', name: 'ダーク・ブルー', colors: ['#0f0c29', '#302b63'] },
+  { id: 'dark-green', name: 'ダーク・グリーン', colors: ['#0a1a0f', '#1a3a2a'] },
+  { id: 'dark-purple', name: 'ダーク・パープル', colors: ['#1a0a2e', '#2d1b69'] },
+  { id: 'dark-warm', name: 'ダーク・ウォーム', colors: ['#1a0a00', '#2d1500'] },
+  { id: 'light-blue', name: 'ライト・ブルー', colors: ['#e0f2fe', '#bae6fd'] },
+  { id: 'light-green', name: 'ライト・グリーン', colors: ['#ecfdf5', '#d1fae5'] },
+  { id: 'light-warm', name: 'ライト・ウォーム', colors: ['#fff7ed', '#fed7aa'] },
+  { id: 'light-purple', name: 'ライト・パープル', colors: ['#f5f3ff', '#ede9fe'] },
 ];
 
 const BG_SOURCES = [
@@ -113,27 +113,24 @@ export default function Home() {
 
   return (
     <div className="app-container">
-      {/* 復活したヘッダー */}
       <header className="app-header">
         <h1>OGP Maker</h1>
-        <p>AI背景 × テキストオーバーレイで、SNS映えする画像を生成</p>
+        <p>AI背景 × テキストオーバーレイで、プロフェッショナルな画像を瞬時に生成</p>
       </header>
 
       <div className="workspace">
-        {/* 左側: 設定サイドバー */}
         <aside className="sidebar">
-          {/* 基本設定 */}
-          <div className="sidebar-section">
-            <h3 className="section-label">📋 基本設定</h3>
-            <div className="form-group" style={{ marginBottom: '16px' }}>
-              <label className="label">コンテンツタイプ</label>
-              <input name="type" className="input" placeholder="採択" value={formData.type} onChange={handleChange} />
+          <div className="sidebar-group">
+            <h3 className="section-title"><span>📋</span> コンテンツ設定</h3>
+            <div className="form-group" style={{ marginBottom: '20px' }}>
+              <label>コンテンツタイプ</label>
+              <input name="type" className="dark-input" placeholder="採択" value={formData.type} onChange={handleChange} />
             </div>
-            <div className="form-group" style={{ marginBottom: '16px' }}>
-              <label className="label">タイトル</label>
+            <div className="form-group" style={{ marginBottom: '20px' }}>
+              <label>タイトル</label>
               <textarea 
                 name="title" 
-                className="input" 
+                className="dark-input" 
                 rows={3} 
                 style={{ resize: 'none' }} 
                 value={formData.title} 
@@ -141,27 +138,25 @@ export default function Home() {
               />
             </div>
             <div className="form-group">
-              <label className="label">補足情報</label>
-              <input name="info" className="input" placeholder="Arakawa Lab" value={formData.info} onChange={handleChange} />
+              <label>補足情報</label>
+              <input name="info" className="dark-input" placeholder="Arakawa Lab" value={formData.info} onChange={handleChange} />
             </div>
           </div>
 
-          {/* フォント設定 */}
-          <div className="sidebar-section">
-            <h3 className="section-label">🖋 フォント</h3>
-            <select name="font" className="select" value={formData.font} onChange={handleChange}>
+          <div className="sidebar-group">
+            <h3 className="section-title"><span>🖋</span> タイポグラフィ</h3>
+            <select name="font" className="dark-select" value={formData.font} onChange={handleChange}>
               {FONTS.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
             </select>
           </div>
 
-          {/* 背景設定 (ボトム張り付きを解除) */}
-          <div className="sidebar-section">
-            <h3 className="section-label">🖼 背景</h3>
-            <div className="tabs">
+          <div className="sidebar-group">
+            <h3 className="section-title"><span>🖼</span> 背景・スタイル</h3>
+            <div className="dark-tabs">
               {BG_SOURCES.map(s => (
                 <div 
                   key={s.id} 
-                  className={`tab-item ${formData.source === s.id ? 'active' : ''}`}
+                  className={`dark-tab ${formData.source === s.id ? 'active' : ''}`}
                   onClick={() => setFormData(prev => ({ ...prev, source: s.id }))}
                 >
                   {s.label.split(' ')[1]}
@@ -170,72 +165,76 @@ export default function Home() {
             </div>
 
             {formData.source === 'gradient' ? (
-              <div className="swatch-grid animate-fade-in">
+              <div className="palette-grid animate-fade-in">
                 {COLOR_PRESETS.map(c => (
                   <div 
                     key={c.id} 
-                    className={`swatch ${formData.color === c.id ? 'active' : ''}`}
+                    className={`palette-item ${formData.color === c.id ? 'active' : ''}`}
                     style={{ background: `linear-gradient(135deg, ${c.colors[0]}, ${c.colors[1]})` }}
                     onClick={() => setFormData(prev => ({ ...prev, color: c.id }))}
-                  />
+                  >
+                    <span>{c.name}</span>
+                  </div>
                 ))}
               </div>
             ) : (
               <div className="animate-fade-in">
                 <input 
                   name="query" 
-                  className="input" 
-                  placeholder={formData.source === 'pollinations' ? 'AIへの指示' : 'キーワード検索'} 
+                  className="dark-input" 
+                  placeholder={formData.source === 'pollinations' ? 'AI指示（例: nebula, city）' : '写真検索キーワード'} 
                   value={formData.query} 
                   onChange={handleChange} 
                 />
                 <button className="btn-secondary" onClick={generatePreview} disabled={isOverLimit}>
-                  {loading ? '生成中...' : '🔄 背景を再構成'}
+                  {loading ? '生成中...' : '🔄 背景を再構成する'}
                 </button>
               </div>
             )}
           </div>
 
-          <div style={{ marginTop: 'auto', textAlign: 'center', fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-            本日利用: {usage} / {maxLimit} 回分
+          <div style={{ marginTop: 'auto', textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+             本日利用: {usage} / {maxLimit} 回 <br />
+             <span style={{ fontSize: '0.65rem', opacity: 0.5 }}>明日にリセットされます</span>
           </div>
         </aside>
 
-        {/* 右側: 制作エリア */}
-        <main className="main-content">
-          <section className="patterns-section">
-            <h3 className="section-label">🧩 レイアウトパターン</h3>
-            <div className="patterns-scroll">
+        <main className="main-dashboard">
+          <section className="pattern-section">
+            <h3 className="section-title">🧩 レイアウトデザイン</h3>
+            <div className="pattern-carousel">
               {PATTERNS.map(p => (
                 <div 
                   key={p.id} 
-                  className={`pattern-card ${formData.pattern === p.id ? 'active' : ''}`}
+                  className={`pattern-box ${formData.pattern === p.id ? 'active' : ''}`}
                   onClick={() => setFormData(prev => ({ ...prev, pattern: p.id }))}
                 >
-                  <div className="pattern-thumb"><img src={p.img} alt={p.name} /></div>
-                  <div className="pattern-name">{p.name}</div>
+                  <div className="pattern-media">
+                    <img src={p.img} alt={p.name} />
+                  </div>
+                  <div className="pattern-label">{p.name}</div>
                 </div>
               ))}
             </div>
           </section>
 
           <section className="canvas-section">
-            <div className="preview-wrapper">
-              <div className="image-container">
+            <div className="canvas-preview">
+              <div className="og-frame">
                 {loading && (
-                  <div className="loading-indicator">
-                    <div className="spinner"></div>
+                  <div className="loading-shade">
+                    <div className="spin"></div>
                   </div>
                 )}
-                <img src={ogUrl} alt="Preview" className="ogp-img" key={previewKey} onLoad={() => setLoading(false)} onError={() => setLoading(false)} />
+                <img src={ogUrl} alt="Preview" className="og-img" key={previewKey} onLoad={() => setLoading(false)} onError={() => setLoading(false)} />
               </div>
-              <div style={{ textAlign: 'right', marginTop: '12px', color: '#9ca3af', fontSize: '0.75rem' }}>1200 × 630</div>
+              <div style={{ textAlign: 'right', marginTop: '16px', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>1200 × 630</div>
             </div>
           </section>
 
-          <footer className="action-footer">
-            <button className="btn-primary" onClick={downloadImage} disabled={downloading}>
-              <Download size={22} />
+          <footer className="action-area">
+            <button className="btn-download" onClick={downloadImage} disabled={downloading}>
+              <Download size={24} />
               {downloading ? '保存中...' : 'PNGをダウンロード'}
             </button>
           </footer>
