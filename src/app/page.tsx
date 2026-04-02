@@ -40,7 +40,7 @@ const getTodayDate = () => new Date().toISOString().split('T')[0];
 
 export default function Home() {
   const [form, setForm] = useState({
-    type: '採択', title: '大規模言語モデルによる研究支援の新展開',
+    type: '発表', title: '大規模言語モデルによる研究支援の新展開',
     info: 'Arakawa Lab | IEEE 2026', pattern: 'glass', seed: '42',
     source: 'gradient', query: '', font: 'noto-sans-jp', color: 'dark-blue',
   });
@@ -90,7 +90,7 @@ export default function Home() {
       {/* ===== Input Bar ===== */}
       <section className="input-bar">
         <div className="field">
-          <label className="field-label">表示ヘッダ<span className="field-hint">採択 / 受賞</span></label>
+          <label className="field-label">ヘッダ</label>
           <input name="type" className="input" value={form.type} onChange={onChange} />
         </div>
         <div className="field">
