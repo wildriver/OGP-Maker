@@ -151,7 +151,14 @@ export default function Home() {
             )}
           </div>
 
-          <div className="usage-counter">リミット: {usage} / {limit} 回</div>
+          <div>
+            <button className="btn-primary" style={{ width: '100%', padding: '14px' }} onClick={download} disabled={saving}>
+              <Download size={20} />{saving ? '保存中…' : 'PNGをダウンロード'}
+            </button>
+            <div className="usage-counter" style={{ marginTop: '12px', border: 'none', textAlign: 'center' }}>
+              リミット: {usage} / {limit} 回
+            </div>
+          </div>
         </aside>
 
         {/* Canvas Panel: Cohesive Studio Layout */}
@@ -177,12 +184,6 @@ export default function Home() {
                 <img src={ogUrl} alt="Preview" key={key} onLoad={() => setLoading(false)} onError={() => setLoading(false)} />
               </div>
             </div>
-
-            <footer className="action-footer">
-              <button className="btn-primary" onClick={download} disabled={saving}>
-                <Download size={20} />{saving ? '保存中…' : 'PNGをダウンロード'}
-              </button>
-            </footer>
           </div>
         </main>
       </div>
