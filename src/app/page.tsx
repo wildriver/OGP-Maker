@@ -20,14 +20,14 @@ const FONTS = [
 ];
 
 const COLOR_PRESETS = [
-  { id: 'dark-blue',    label: 'Blue',   colors: ['#0f0c29', '#302b63'], light: false },
-  { id: 'dark-green',   label: 'Green',  colors: ['#0a1a0f', '#1a3a2a'], light: false },
-  { id: 'dark-purple',  label: 'Purple', colors: ['#1a0a2e', '#2d1b69'], light: false },
-  { id: 'dark-warm',    label: 'Warm',   colors: ['#1a0a00', '#2d1500'], light: false },
-  { id: 'light-blue',   label: 'Blue',   colors: ['#e0f2fe', '#bae6fd'], light: true },
-  { id: 'light-green',  label: 'Green',  colors: ['#ecfdf5', '#d1fae5'], light: true },
-  { id: 'light-warm',   label: 'Warm',   colors: ['#fff7ed', '#fed7aa'], light: true },
-  { id: 'light-purple', label: 'Purple', colors: ['#f5f3ff', '#ede9fe'], light: true },
+  { id: 'dark-blue',    label: 'Blue',   colors: ['#0f0c29', '#302b63'] },
+  { id: 'dark-green',   label: 'Green',  colors: ['#0a1a0f', '#1a3a2a'] },
+  { id: 'dark-purple',  label: 'Purple', colors: ['#1a0a2e', '#2d1b69'] },
+  { id: 'dark-warm',    label: 'Warm',   colors: ['#1a0a00', '#2d1500'] },
+  { id: 'light-blue',   label: 'Blue',   colors: ['#e0f2fe', '#bae6fd'], text: '#334155' },
+  { id: 'light-green',  label: 'Green',  colors: ['#ecfdf5', '#d1fae5'], text: '#334155' },
+  { id: 'light-warm',   label: 'Warm',   colors: ['#fff7ed', '#fed7aa'], text: '#334155' },
+  { id: 'light-purple', label: 'Purple', colors: ['#f5f3ff', '#ede9fe'], text: '#334155' },
 ];
 
 const BG_TABS = [
@@ -76,30 +76,30 @@ export default function Home() {
     } catch { alert('ダウンロードに失敗しました。'); } finally { setSaving(false); }
   }, [ogUrl, form.title]);
 
-  const darkPresets = COLOR_PRESETS.filter(c => !c.light);
-  const lightPresets = COLOR_PRESETS.filter(c => c.light);
+  const darkPresets = COLOR_PRESETS.filter(c => c.id.startsWith('dark'));
+  const lightPresets = COLOR_PRESETS.filter(c => c.id.startsWith('light'));
 
   return (
     <div className="app-shell">
       {/* ===== App Bar ===== */}
       <header className="app-bar">
         <div className="logo"><span>OGP</span> Maker</div>
-        <div className="tagline">AI背景 × テキストオーバーレイで、高品質な画像を瞬間生成</div>
+        <div className="tagline">AI背景 × テキストオーバーレイで、SNS映えする画像を生成</div>
       </header>
 
       {/* ===== Input Bar ===== */}
       <section className="input-bar">
         <div className="field">
-          <label className="field-label">表示ヘッダ<span className="field-hint">採択, 受賞...</span></label>
+          <label className="field-label">表示ヘッダ<span className="field-hint">採択 / 受賞</span></label>
           <input name="type" className="input" value={form.type} onChange={onChange} />
         </div>
         <div className="field">
           <label className="field-label">メインタイトル</label>
-          <textarea name="title" className="textarea" rows={2} value={form.title} onChange={onChange} />
+          <textarea name="title" className="textarea" rows={1} value={form.title} onChange={onChange} />
         </div>
         <div className="field">
           <label className="field-label">補足・クレジット</label>
-          <textarea name="info" className="textarea" rows={2} value={form.info} onChange={onChange} />
+          <textarea name="info" className="textarea" rows={1} value={form.info} onChange={onChange} />
         </div>
       </section>
 
@@ -124,29 +124,29 @@ export default function Home() {
 
             {form.source === 'gradient' ? (
               <div>
-                <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', fontWeight: 800, textTransform: 'uppercase', marginBottom: 8, letterSpacing: '0.05em' }}>Dark</div>
+                <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', marginBottom: 6, color: 'var(--text-tertiary)' }}>Dark</div>
                 <div className="color-grid" style={{ marginBottom: 16 }}>
                   {darkPresets.map(c => (
                     <div key={c.id} className={`color-swatch ${form.color === c.id ? 'active' : ''}`}
-                      style={{ background: `linear-gradient(135deg, ${c.colors[0]}, ${c.colors[1]})` }}
-                      onClick={() => set({ color: c.id })} />
+                      style={{ background: `linear-gradient(135deg, ${c.colors[0]}, ${c.colors[1]})`, color: '#fff' }}
+                      onClick={() => set({ color: c.id })}>{c.label}</div>
                   ))}
                 </div>
-                <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', fontWeight: 800, textTransform: 'uppercase', marginBottom: 8, letterSpacing: '0.05em' }}>Light</div>
+                <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', marginBottom: 6, color: 'var(--text-tertiary)' }}>Light</div>
                 <div className="color-grid">
                   {lightPresets.map(c => (
                     <div key={c.id} className={`color-swatch ${form.color === c.id ? 'active' : ''}`}
-                      style={{ background: `linear-gradient(135deg, ${c.colors[0]}, ${c.colors[1]})` }}
-                      onClick={() => set({ color: c.id })} />
+                      style={{ background: `linear-gradient(135deg, ${c.colors[0]}, ${c.colors[1]})`, color: (c as any).text || '#334155' }}
+                      onClick={() => set({ color: c.id })}>{c.label}</div>
                   ))}
                 </div>
               </div>
             ) : (
               <div>
                 <input name="query" className="input" style={{ width: '100%', marginBottom: '12px' }}
-                  placeholder={form.source === 'pollinations' ? 'プロンプトを入力（例: nebula）' : 'キーワードを入力'}
+                  placeholder={form.source === 'pollinations' ? 'プロンプトを入力' : 'キーワードを入力'}
                   value={form.query} onChange={onChange} />
-                <button className="btn-generate" style={{ padding: '12px' }} onClick={regen} disabled={over}>背景を再生成</button>
+                <button className="btn-generate" onClick={regen} disabled={over}>背景を再生成</button>
               </div>
             )}
           </div>
@@ -154,15 +154,17 @@ export default function Home() {
           <div className="usage-counter">リミット: {usage} / {limit} 回</div>
         </aside>
 
-        {/* Canvas Panel: Focused Studio Layout */}
+        {/* Canvas Panel: Cohesive Studio Layout */}
         <main className="canvas-panel">
           <div className="studio-main-group">
             <div className="pattern-selector">
-              <span className="prop-section-title" style={{ borderLeft: 'none', paddingLeft: 0, fontSize: '0.8rem', opacity: 0.9 }}>レイアウトパターン</span>
+              <span className="prop-section-title" style={{ border: 'none', padding: 0 }}>レイアウトパターン</span>
               <div className="pattern-options-row">
                 {PATTERNS.map(p => (
                   <div key={p.id} className={`pattern-option ${form.pattern === p.id ? 'active' : ''}`} onClick={() => set({ pattern: p.id })}>
-                    <div className="pattern-option-thumb"><img src={p.img} alt={p.name} /></div>
+                    <div className="pattern-option-thumb">
+                      <img src={p.img} alt={p.name} />
+                    </div>
                     <span className="pattern-option-name">{p.name}</span>
                   </div>
                 ))}
