@@ -84,21 +84,21 @@ export default function Home() {
       {/* ===== App Bar ===== */}
       <header className="app-bar">
         <div className="logo"><span>OGP</span> Maker</div>
-        <div className="tagline">AI背景 × テキストオーバーレイで、高品質な画像を生成</div>
+        <div className="tagline">AI背景 × テキストオーバーレイで、高品質な画像を瞬間生成</div>
       </header>
 
       {/* ===== Input Bar ===== */}
       <section className="input-bar">
         <div className="field">
-          <label className="field-label">ヘッダ<span className="field-hint">採択 / 受賞 / 発表</span></label>
+          <label className="field-label">表示ヘッダ<span className="field-hint">採択, 受賞...</span></label>
           <input name="type" className="input" value={form.type} onChange={onChange} />
         </div>
         <div className="field">
-          <label className="field-label">タイトル</label>
+          <label className="field-label">メインタイトル</label>
           <textarea name="title" className="textarea" rows={2} value={form.title} onChange={onChange} />
         </div>
         <div className="field">
-          <label className="field-label">補足情報</label>
+          <label className="field-label">補足・クレジット</label>
           <textarea name="info" className="textarea" rows={2} value={form.info} onChange={onChange} />
         </div>
       </section>
@@ -124,41 +124,41 @@ export default function Home() {
 
             {form.source === 'gradient' ? (
               <div>
-                <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-tertiary)', marginBottom: 8 }}>Dark</div>
-                <div className="color-grid" style={{ marginBottom: 12 }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', fontWeight: 800, textTransform: 'uppercase', marginBottom: 8, letterSpacing: '0.05em' }}>Dark</div>
+                <div className="color-grid" style={{ marginBottom: 16 }}>
                   {darkPresets.map(c => (
                     <div key={c.id} className={`color-swatch ${form.color === c.id ? 'active' : ''}`}
-                      style={{ background: `linear-gradient(135deg, ${c.colors[0]}, ${c.colors[1]})`, color: '#fff' }}
-                      onClick={() => set({ color: c.id })}>{c.label}</div>
+                      style={{ background: `linear-gradient(135deg, ${c.colors[0]}, ${c.colors[1]})` }}
+                      onClick={() => set({ color: c.id })} />
                   ))}
                 </div>
-                <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-tertiary)', marginBottom: 8 }}>Light</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', fontWeight: 800, textTransform: 'uppercase', marginBottom: 8, letterSpacing: '0.05em' }}>Light</div>
                 <div className="color-grid">
                   {lightPresets.map(c => (
                     <div key={c.id} className={`color-swatch ${form.color === c.id ? 'active' : ''}`}
-                      style={{ background: `linear-gradient(135deg, ${c.colors[0]}, ${c.colors[1]})`, color: '#374151' }}
-                      onClick={() => set({ color: c.id })}>{c.label}</div>
+                      style={{ background: `linear-gradient(135deg, ${c.colors[0]}, ${c.colors[1]})` }}
+                      onClick={() => set({ color: c.id })} />
                   ))}
                 </div>
               </div>
             ) : (
               <div>
-                <input name="query" className="input" style={{ width: '100%' }}
-                  placeholder={form.source === 'pollinations' ? 'プロンプト（例: nebula）' : 'キーワード'}
+                <input name="query" className="input" style={{ width: '100%', marginBottom: '12px' }}
+                  placeholder={form.source === 'pollinations' ? 'プロンプトを入力（例: nebula）' : 'キーワードを入力'}
                   value={form.query} onChange={onChange} />
-                <button className="btn-generate" onClick={regen} disabled={over}>背景を再生成</button>
+                <button className="btn-generate" style={{ padding: '12px' }} onClick={regen} disabled={over}>背景を再生成</button>
               </div>
             )}
           </div>
 
-          <div className="usage-counter">{usage} / {limit} 回</div>
+          <div className="usage-counter">リミット: {usage} / {limit} 回</div>
         </aside>
 
-        {/* Canvas Panel: Centered Grouped Block */}
+        {/* Canvas Panel: Focused Studio Layout */}
         <main className="canvas-panel">
           <div className="studio-main-group">
             <div className="pattern-selector">
-              <span className="prop-section-title" style={{ marginBottom: 0 }}>レイアウトパターン</span>
+              <span className="prop-section-title" style={{ borderLeft: 'none', paddingLeft: 0, fontSize: '0.8rem', opacity: 0.9 }}>レイアウトパターン</span>
               <div className="pattern-options-row">
                 {PATTERNS.map(p => (
                   <div key={p.id} className={`pattern-option ${form.pattern === p.id ? 'active' : ''}`} onClick={() => set({ pattern: p.id })}>
@@ -178,7 +178,7 @@ export default function Home() {
 
             <footer className="action-footer">
               <button className="btn-primary" onClick={download} disabled={saving}>
-                <Download size={18} />{saving ? '保存中…' : 'PNGをダウンロード'}
+                <Download size={20} />{saving ? '保存中…' : 'PNGをダウンロード'}
               </button>
             </footer>
           </div>
