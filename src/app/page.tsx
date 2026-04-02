@@ -151,7 +151,7 @@ export default function Home() {
             )}
           </div>
 
-          <div>
+          <div style={{ marginTop: '12px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
             <button className="btn-primary" style={{ width: '100%', padding: '14px' }} onClick={download} disabled={saving}>
               <Download size={20} />{saving ? '保存中…' : 'PNGをダウンロード'}
             </button>
