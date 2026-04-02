@@ -154,23 +154,24 @@ export default function Home() {
           <div className="usage-counter">{usage} / {limit} 回</div>
         </aside>
 
-        {/* Canvas Panel */}
+        {/* Canvas Panel: Centered Grouped Block */}
         <main className="canvas-panel">
           <div className="pattern-selector">
-            <span className="pattern-selector-label">レイアウトパターン</span>
-            {PATTERNS.map(p => (
-              <div key={p.id} className={`pattern-option ${form.pattern === p.id ? 'active' : ''}`} onClick={() => set({ pattern: p.id })}>
-                <div className="pattern-option-thumb"><img src={p.img} alt={p.name} /></div>
-                <span className="pattern-option-name">{p.name}</span>
-              </div>
-            ))}
+            <span className="prop-section-title" style={{ marginBottom: 0 }}>レイアウトパターン</span>
+            <div className="pattern-options-row">
+              {PATTERNS.map(p => (
+                <div key={p.id} className={`pattern-option ${form.pattern === p.id ? 'active' : ''}`} onClick={() => set({ pattern: p.id })}>
+                  <div className="pattern-option-thumb"><img src={p.img} alt={p.name} /></div>
+                  <span className="pattern-option-name">{p.name}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="canvas-viewport">
             <div className="canvas-frame">
               {loading && <div className="loading-overlay"><div className="spinner" /></div>}
               <img src={ogUrl} alt="Preview" key={key} onLoad={() => setLoading(false)} onError={() => setLoading(false)} />
-              <div className="canvas-meta">1200 × 630</div>
             </div>
           </div>
 
