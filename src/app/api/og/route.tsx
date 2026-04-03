@@ -190,7 +190,9 @@ export async function GET(req: NextRequest) {
 
   if (directBgUrl) {
     bgUrl = directBgUrl;
-  } else if (source === 'pollinations' || source === 'unsplash') {
+  }
+  
+  if (!bgUrl && (source === 'pollinations' || source === 'unsplash')) {
     try {
       if (source === 'unsplash') {
         const unsplashKey = process.env.UNSPLASH_ACCESS_KEY;
@@ -231,6 +233,12 @@ export async function GET(req: NextRequest) {
   if (bgUrl) {
     try {
       console.log(`[OG-API] Fetching final bg image: ${bgUrl}`);
+      
+      // Re-apply headers based on source if not already set
+      if (bgUrl.includes('pollinations.ai') && process.env.POLLINATIONS_API_KEY) {
+        headers['Authorization'] = `Bearer ${process.env.POLLINATIONS_API_KEY}`;
+      }
+
       const bgRes = await fetch(bgUrl, { 
         redirect: 'follow',
         headers: headers

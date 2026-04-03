@@ -69,11 +69,16 @@ export default function Home() {
     setLoading(true);
     const currentForm = { ...form, ...customPatch };
     const newSeed = String(Math.random() * 1e4 | 0);
-    const targetQuery = currentForm.query || currentForm.title;
+    const targetQuery = currentForm.query || (currentForm.title === 'タイトル未設定' ? '' : currentForm.title);
     
     try {
-      const res = await fetch(`/api/bg?source=${currentForm.source}&query=${encodeURIComponent(targetQuery)}&seed=${newSeed}`);
+      const url = `/api/bg?source=${currentForm.source}&query=${encodeURIComponent(targetQuery || 'abstract')}&seed=${newSeed}`;
+      console.log(`[Regen] Fetching from: ${url}`);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('API request failed');
       const data = await res.json();
+      console.log(`[Regen] Result URL: ${data.url}`);
+      
       set({ 
         ...customPatch,
         activeSeed: newSeed, 
@@ -85,12 +90,14 @@ export default function Home() {
       tick();
       setKey(k => k + 1);
     } catch (e) {
-      console.error('Regen error:', e);
+      console.error('[Regen] Error:', e);
+      alert('背景の生成に失敗しました。時間をおいて再度お試しください。');
+    } finally {
       setLoading(false);
     }
   }, [form, over, tick, set]);
 
-  const ogUrl = `/api/og?title=${encodeURIComponent(form.title)}&type=${encodeURIComponent(form.type)}&info=${encodeURIComponent(form.info)}&pattern=${form.pattern}&bgUrl=${encodeURIComponent(form.bgUrl)}&font=${form.font}&color=${form.color}`;
+  const ogUrl = `/api/og?title=${encodeURIComponent(form.title)}&type=${encodeURIComponent(form.type)}&info=${encodeURIComponent(form.info)}&pattern=${form.pattern}&bgUrl=${encodeURIComponent(form.bgUrl)}&source=${form.source}&font=${form.font}&color=${form.color}`;
 
   const download = useCallback(async () => {
     setSaving(true);
