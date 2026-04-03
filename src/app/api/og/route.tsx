@@ -184,11 +184,14 @@ export async function GET(req: NextRequest) {
 
   // ===== Background image fetching =====
   let bgSrc = '';
-  if (source === 'pollinations' || source === 'unsplash') {
-    try {
-      let bgUrl = '';
-      let headers: Record<string, string> = {};
+  let bgUrl = '';
+  let headers: Record<string, string> = {};
+  const directBgUrl = searchParams.get('bgUrl');
 
+  if (directBgUrl) {
+    bgUrl = directBgUrl;
+  } else if (source === 'pollinations' || source === 'unsplash') {
+    try {
       if (source === 'unsplash') {
         const unsplashKey = process.env.UNSPLASH_ACCESS_KEY;
         if (unsplashKey) {
@@ -220,26 +223,30 @@ export async function GET(req: NextRequest) {
           headers['Authorization'] = `Bearer ${pollinationsKey}`;
         }
       }
-
-      if (bgUrl) {
-        console.log(`[OG-API] Fetching from ${source}: ${bgUrl}`);
-        const bgRes = await fetch(bgUrl, { 
-          redirect: 'follow',
-          headers: headers
-        });
-        const contentType = bgRes.headers.get('content-type') || '';
-        console.log(`[OG-API] Result: status=${bgRes.status}, type=${contentType}`);
-        
-        if (bgRes.ok && contentType.startsWith('image/')) {
-          const buf = await bgRes.arrayBuffer();
-          const ext = contentType.includes('jpeg') || contentType.includes('jpg') ? 'jpeg' : 'png';
-          bgSrc = `data:image/${ext};base64,${Buffer.from(buf).toString('base64')}`;
-        } else {
-          console.warn(`[OG-API] Image fetch failed or not an image: ${bgRes.status}`);
-        }
-      }
     } catch {
       // fallback to gradient
+    }
+  }
+
+  if (bgUrl) {
+    try {
+      console.log(`[OG-API] Fetching final bg image: ${bgUrl}`);
+      const bgRes = await fetch(bgUrl, { 
+        redirect: 'follow',
+        headers: headers
+      });
+      const contentType = bgRes.headers.get('content-type') || '';
+      console.log(`[OG-API] Result: status=${bgRes.status}, type=${contentType}`);
+      
+      if (bgRes.ok && contentType.startsWith('image/')) {
+        const buf = await bgRes.arrayBuffer();
+        const ext = contentType.includes('jpeg') || contentType.includes('jpg') ? 'jpeg' : 'png';
+        bgSrc = `data:image/${ext};base64,${Buffer.from(buf).toString('base64')}`;
+      } else {
+        console.warn(`[OG-API] Image fetch failed or not an image: ${bgRes.status}`);
+      }
+    } catch (e) {
+      console.error(`[OG-API] Fetch error:`, e);
     }
   }
 

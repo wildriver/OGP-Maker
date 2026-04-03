@@ -44,6 +44,7 @@ export default function Home() {
     info: 'Arakawa Lab | IEEE 2026', pattern: 'glass', seed: '42',
     source: 'gradient', query: '', font: 'noto-sans-jp', color: 'dark-blue',
     activeQuery: '', activeSeed: '42',
+    bgUrl: '',
   });
   const [usage, setUsage] = useState(0);
   const [key, setKey] = useState(0);
@@ -63,17 +64,33 @@ export default function Home() {
   const set = (patch: Partial<typeof form>) => setForm(p => ({ ...p, ...patch }));
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => set({ [e.target.name]: e.target.value });
 
-  const regen = () => {
+  const regen = useCallback(async (customPatch?: Partial<typeof form>) => {
     if (over) return;
     setLoading(true);
+    const currentForm = { ...form, ...customPatch };
     const newSeed = String(Math.random() * 1e4 | 0);
-    const targetQuery = form.query || form.title;
-    set({ activeSeed: newSeed, activeQuery: targetQuery, query: targetQuery, seed: newSeed });
-    tick();
-    setKey(k => k + 1);
-  };
+    const targetQuery = currentForm.query || currentForm.title;
+    
+    try {
+      const res = await fetch(`/api/bg?source=${currentForm.source}&query=${encodeURIComponent(targetQuery)}&seed=${newSeed}`);
+      const data = await res.json();
+      set({ 
+        ...customPatch,
+        activeSeed: newSeed, 
+        activeQuery: targetQuery, 
+        query: targetQuery, 
+        seed: newSeed,
+        bgUrl: data.url || ''
+      });
+      tick();
+      setKey(k => k + 1);
+    } catch (e) {
+      console.error('Regen error:', e);
+      setLoading(false);
+    }
+  }, [form, over, tick, set]);
 
-  const ogUrl = `/api/og?title=${encodeURIComponent(form.title)}&type=${encodeURIComponent(form.type)}&info=${encodeURIComponent(form.info)}&pattern=${form.pattern}&seed=${form.activeSeed}&source=${form.source}&query=${encodeURIComponent(form.activeQuery)}&font=${form.font}&color=${form.color}`;
+  const ogUrl = `/api/og?title=${encodeURIComponent(form.title)}&type=${encodeURIComponent(form.type)}&info=${encodeURIComponent(form.info)}&pattern=${form.pattern}&bgUrl=${encodeURIComponent(form.bgUrl)}&font=${form.font}&color=${form.color}`;
 
   const download = useCallback(async () => {
     setSaving(true);
@@ -128,12 +145,12 @@ export default function Home() {
             <div className="tab-group">
               {BG_TABS.map(t => (
                 <div key={t.id} className={`tab-item ${form.source === t.id ? 'active' : ''}`} onClick={() => {
-                  const patch: any = { source: t.id };
-                  if (t.id !== 'gradient' && !form.activeQuery) {
-                    patch.activeQuery = form.query || form.title;
-                    patch.query = patch.activeQuery;
+                  if (t.id === form.source) return;
+                  if (t.id === 'gradient') {
+                    set({ source: t.id, bgUrl: '' });
+                  } else {
+                    regen({ source: t.id });
                   }
-                  set(patch);
                 }}>{t.label}</div>
               ))}
             </div>
@@ -162,7 +179,7 @@ export default function Home() {
                 <input name="query" className="input" style={{ width: '100%', marginBottom: '12px' }}
                   placeholder={form.source === 'pollinations' ? 'プロンプトを入力' : 'キーワードを入力'}
                   value={form.query} onChange={onChange} />
-                <button className="btn-generate" onClick={regen} disabled={over}>背景を再生成</button>
+                <button className="btn-generate" onClick={() => regen()} disabled={over}>背景を再生成</button>
               </div>
             )}
           </div>
