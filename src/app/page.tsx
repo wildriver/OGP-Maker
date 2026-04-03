@@ -43,6 +43,7 @@ export default function Home() {
     type: '発表', title: '大規模言語モデルによる研究支援の新展開',
     info: 'Arakawa Lab | IEEE 2026', pattern: 'glass', seed: '42',
     source: 'gradient', query: '', font: 'noto-sans-jp', color: 'dark-blue',
+    activeQuery: '', activeSeed: '42',
   });
   const [usage, setUsage] = useState(0);
   const [key, setKey] = useState(0);
@@ -62,9 +63,17 @@ export default function Home() {
   const set = (patch: Partial<typeof form>) => setForm(p => ({ ...p, ...patch }));
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => set({ [e.target.name]: e.target.value });
 
-  const regen = () => { if (over) return; setLoading(true); set({ seed: String(Math.random() * 1e4 | 0) }); tick(); setKey(k => k + 1); };
+  const regen = () => {
+    if (over) return;
+    setLoading(true);
+    const newSeed = String(Math.random() * 1e4 | 0);
+    const targetQuery = form.query || form.title;
+    set({ activeSeed: newSeed, activeQuery: targetQuery, query: targetQuery, seed: newSeed });
+    tick();
+    setKey(k => k + 1);
+  };
 
-  const ogUrl = `/api/og?title=${encodeURIComponent(form.title)}&type=${encodeURIComponent(form.type)}&info=${encodeURIComponent(form.info)}&pattern=${form.pattern}&seed=${form.seed}&source=${form.source}&query=${encodeURIComponent(form.query || form.title)}&font=${form.font}&color=${form.color}`;
+  const ogUrl = `/api/og?title=${encodeURIComponent(form.title)}&type=${encodeURIComponent(form.type)}&info=${encodeURIComponent(form.info)}&pattern=${form.pattern}&seed=${form.activeSeed}&source=${form.source}&query=${encodeURIComponent(form.activeQuery)}&font=${form.font}&color=${form.color}`;
 
   const download = useCallback(async () => {
     setSaving(true);
@@ -118,7 +127,14 @@ export default function Home() {
             <div className="prop-section-title">背景</div>
             <div className="tab-group">
               {BG_TABS.map(t => (
-                <div key={t.id} className={`tab-item ${form.source === t.id ? 'active' : ''}`} onClick={() => set({ source: t.id })}>{t.label}</div>
+                <div key={t.id} className={`tab-item ${form.source === t.id ? 'active' : ''}`} onClick={() => {
+                  const patch: any = { source: t.id };
+                  if (t.id !== 'gradient' && !form.activeQuery) {
+                    patch.activeQuery = form.query || form.title;
+                    patch.query = patch.activeQuery;
+                  }
+                  set(patch);
+                }}>{t.label}</div>
               ))}
             </div>
 
