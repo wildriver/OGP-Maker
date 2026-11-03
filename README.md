@@ -51,3 +51,6 @@ npm run dev
 
 ---
 Developed by **Antigravity** (AI Coding Assistant). Designed for Creators.
+
+
+[![Support me on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/rkwytk)
